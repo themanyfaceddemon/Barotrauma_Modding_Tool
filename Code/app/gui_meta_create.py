@@ -17,20 +17,19 @@ class GUIMetaTab:
             tag="gui_meta_tab",
         ):
             dpg.add_checkbox(label="test", default_value=GUIMetaTab.create_file)
-            
 
     @staticmethod
     def generate_github_issue_link(mod_id, metadata_xml):
-        base_url = AppConfig.github_user_url + "/issues/new?"
-
         params = {
             "template": "add_metadata_config.yml",
             "mod-id": str(mod_id),
             "dependency": metadata_xml,
         }
 
-        issue_url = base_url + urllib.parse.urlencode(
-            params, quote_via=urllib.parse.quote
+        issue_url = (
+            AppConfig.github_user_url
+            + "/issues/new?"
+            + urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         )
 
         return issue_url
