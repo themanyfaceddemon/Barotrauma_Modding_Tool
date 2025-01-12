@@ -5,7 +5,7 @@ import platform
 import re
 import sys
 import traceback
-from tkinter import Tk, messagebox
+from tkinter import Button, Tk, messagebox
 from traceback import TracebackException
 from typing import Any, Type
 
@@ -23,6 +23,7 @@ from Code.loc import Localization as loc
 def copy_to_clipboard(text: str):
     try:
         pyperclip.copy(text)
+        logging.info("Stack trace copied to clipboard.")
     except Exception as e:
         logging.error(f"Failed to copy to clipboard: {e}")
 
@@ -38,11 +39,22 @@ def show_error_message(title, message):
     stack_trace = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
     formatted_message += stack_trace
 
-    copy_to_clipboard(stack_trace)
-
     root = Tk()
     root.withdraw()
     messagebox.showerror(title, formatted_message)
+
+    def on_copy_button_click():
+        copy_to_clipboard(stack_trace)
+
+    copy_window = Tk()
+    copy_window.title("Copy Stack Trace")
+    copy_button = Button(
+        copy_window, text="Copy Stack Trace", command=on_copy_button_click
+    )
+    copy_button.pack(pady=20)
+
+    copy_window.mainloop()
+
     root.destroy()
 
 
