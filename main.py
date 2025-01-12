@@ -2,11 +2,14 @@ import argparse
 import logging
 import os
 import platform
+import re
 import sys
+import traceback
 from tkinter import Tk, messagebox
 from traceback import TracebackException
 from typing import Any, Type
 
+import pyperclip
 from colorama import Fore, Style, init
 
 from Code.app import App
@@ -17,10 +20,29 @@ from Code.handlers import ModManager
 from Code.loc import Localization as loc
 
 
+def copy_to_clipboard(text: str):
+    try:
+        pyperclip.copy(text)
+    except Exception as e:
+        logging.error(f"Failed to copy to clipboard: {e}")
+
+
 def show_error_message(title, message):
+    exc_type, exc_value, exc_tb = sys.exc_info()
+    error_type = f"Error Type: {exc_type.__name__}"  # type: ignore
+    error_description = f"Description: {str(exc_value)}"
+
+    formatted_message = f"{error_type}\n{error_description}\n\n{message}\n\n"
+    formatted_message += "Details:\n"
+
+    stack_trace = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
+    formatted_message += stack_trace
+
+    copy_to_clipboard(stack_trace)
+
     root = Tk()
     root.withdraw()
-    messagebox.showerror(title, message)
+    messagebox.showerror(title, formatted_message)
     root.destroy()
 
 
@@ -67,6 +89,14 @@ def initialize_components(debug: bool, *components: Type[Any]) -> None:
             )
 
 
+def check_path_for_cyrillic():
+    script_path = os.path.abspath(__file__)
+    if re.search(r"[а-яА-Я]", script_path):
+        raise RuntimeError(
+            f"The program installation path contains Cyrillic characters. Please change the installation path. Current path {script_path}"
+        )
+
+
 def args_no_gui(
     start_game: bool,
     auto_game_path: bool,
@@ -111,6 +141,7 @@ def main(debug: bool) -> None:
 if __name__ == "__main__":
     try:
         init(autoreset=True)
+        check_path_for_cyrillic()
 
         parser = argparse.ArgumentParser()
         parser.add_argument("--debug", action="store_true", help="Enable debug mode")
