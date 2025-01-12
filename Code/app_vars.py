@@ -8,7 +8,7 @@ from typing import Any, Dict, Final, Optional
 
 class AppConfig:
     user_config: Dict[str, Any] = {}
-    version: Final[str] = "0.2.1"
+    version: Final[str] = "0.2.0"
 
     _root: Path = Path(__file__).parents[1]
     _data_root: Path = _root / "Data"
