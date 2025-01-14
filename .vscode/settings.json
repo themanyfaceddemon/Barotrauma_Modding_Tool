@@ -1,63 +1,69 @@
 {
   "editor.tabSize": 4,
-  "editor.formatOnSave": true,
+  "[python]": {
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "charliermarsh.ruff",
+      "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+      }
+  },
+  "python.analysis.importFormat": "relative",
+  "python.analysis.typeCheckingMode": "standard",
+  "python.analysis.diagnosticSeverityOverrides": {
+      "reportUnusedCoroutine": "error"
+  },
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
   "editor.wordWrap": "on",
-  "python.analysis.importFormat": "relative",
-  "python.analysis.diagnosticSeverityOverrides": {
-    "reportUnusedCoroutine": "error"
-  },
-  "python.analysis.typeCheckingMode": "standard",
   "todohighlight.keywords": [
-    {
-      "text": "DEBUG",
-      "color": "lightblue",
-      "border": "1px solid blue",
-      "backgroundColor": "rgba(0, 0, 255, 0.02)",
-      "overviewRulerColor": "blue"
-    },
-    {
-      "text": "WARNING",
-      "color": "yellow",
-      "border": "1px solid yellow",
-      "backgroundColor": "rgba(0, 0, 0, 0.02)",
-      "overviewRulerColor": "yellow"
-    },
-    {
-      "text": "FIXME",
-      "color": "red",
-      "border": "1px solid red",
-      "backgroundColor": "rgba(0, 0, 0, 0.02)",
-      "overviewRulerColor": "red"
-    },
-    {
-      "text": "ERROR",
-      "color": "red",
-      "border": "1px solid red",
-      "backgroundColor": "rgba(0, 0, 0, 0.02)",
-      "overviewRulerColor": "red"
-    },
-    {
-      "text": "TODO",
-      "color": "green",
-      "border": "1px solid green",
-      "backgroundColor": "rgba(0, 255, 0, 0.02)",
-      "overviewRulerColor": "green"
-    },
-    {
-      "text": "INFO",
-      "color": "green",
-      "border": "1px solid green",
-      "backgroundColor": "rgba(0, 255, 0, 0.02)",
-      "overviewRulerColor": "green"
-    },
-    {
-      "text": "NOTE",
-      "color": "green",
-      "border": "1px solid green",
-      "backgroundColor": "rgba(0, 255, 0, 0.02)",
-      "overviewRulerColor": "green"
-    }
+      {
+          "text": "DEBUG",
+          "color": "lightblue",
+          "border": "1px solid blue",
+          "backgroundColor": "rgba(0, 0, 255, 0.02)",
+          "overviewRulerColor": "blue"
+      },
+      {
+          "text": "WARNING",
+          "color": "yellow",
+          "border": "1px solid yellow",
+          "backgroundColor": "rgba(0, 0, 0, 0.02)",
+          "overviewRulerColor": "yellow"
+      },
+      {
+          "text": "FIXME",
+          "color": "red",
+          "border": "1px solid red",
+          "backgroundColor": "rgba(0, 0, 0, 0.02)",
+          "overviewRulerColor": "red"
+      },
+      {
+          "text": "ERROR",
+          "color": "red",
+          "border": "1px solid red",
+          "backgroundColor": "rgba(0, 0, 0, 0.02)",
+          "overviewRulerColor": "red"
+      },
+      {
+          "text": "TODO",
+          "color": "green",
+          "border": "1px solid green",
+          "backgroundColor": "rgba(0, 255, 0, 0.02)",
+          "overviewRulerColor": "green"
+      },
+      {
+          "text": "INFO",
+          "color": "green",
+          "border": "1px solid green",
+          "backgroundColor": "rgba(0, 255, 0, 0.02)",
+          "overviewRulerColor": "green"
+      },
+      {
+          "text": "NOTE",
+          "color": "green",
+          "border": "1px solid green",
+          "backgroundColor": "rgba(0, 255, 0, 0.02)",
+          "overviewRulerColor": "green"
+      }
   ]
 }
