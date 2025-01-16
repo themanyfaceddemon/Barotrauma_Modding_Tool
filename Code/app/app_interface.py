@@ -11,6 +11,7 @@ from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
 
+from .gui_meta_create import GUIMetaTab
 from .mods_tab import ModsTab
 from .settings_tab import SettingsTab
 
@@ -24,6 +25,7 @@ class AppInterface:
         AppInterface._create_main_window()
         SettingsTab.create()
         ModsTab.create()
+        GUIMetaTab.create()
 
         dpg.set_value("main_tab_bar", "mod_tab")
 
@@ -67,9 +69,7 @@ class AppInterface:
 
         is_latest = None
         try:
-            response = requests.get(
-                "https://api.github.com/repos/themanyfaceddemon/Barotrauma_Modding_Tool/releases/latest"
-            )
+            response = requests.get(AppConfig.github_api_url + "/releases/latest")
             if response.status_code == 200:
                 latest_release = response.json()
                 is_latest = AppConfig.version == latest_release["tag_name"]
@@ -90,7 +90,7 @@ class AppInterface:
             label=(loc.get_string("cur-version-latest") + " " + label),
             parent="main_view_bar",
             callback=lambda: webbrowser.open(
-                "https://github.com/themanyfaceddemon/Barotrauma_Modding_Tool/releases/latest"
+                AppConfig.github_user_url + "/releases/latest"
             ),
             enabled=(is_latest is False),
         )

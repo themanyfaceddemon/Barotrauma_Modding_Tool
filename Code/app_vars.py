@@ -14,6 +14,13 @@ class AppConfig:
     _data_root: Path = _root / "Data"
     _user_data_path: Path = Path()
 
+    github_api_url: Final[str] = (
+        "https://api.github.com/repos/themanyfaceddemon/Barotrauma_Modding_Tool"
+    )
+    github_user_url: Final[str] = (
+        "https://github.com/themanyfaceddemon/Barotrauma_Modding_Tool"
+    )
+
     xml_system_dirs = [
         "filelist.xml",
         "metadata.xml",
