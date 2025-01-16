@@ -13,6 +13,7 @@ from Code.app_vars import AppConfig
 from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
+from Code.steam_cmd import SteamCMDControl
 from error_message_tk import show_error_message_with_traceback
 
 
@@ -103,7 +104,9 @@ def args_no_gui(
 
 def main(debug: bool):
     logging.debug("Starting program...")
-    initialize_components(debug, AppConfig, loc, ModManager, AppInitializer)
+    initialize_components(
+        debug, AppConfig, loc, SteamCMDControl, ModManager, AppInitializer
+    )
     logging.debug("Initialization complete.")
     App.run()
     logging.debug("Application terminated.")

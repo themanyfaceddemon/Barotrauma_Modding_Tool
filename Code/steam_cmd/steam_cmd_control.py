@@ -4,6 +4,7 @@ import subprocess
 import threading
 
 from Code.app_vars import AppConfig
+
 from .steam_cmd_installer import SteamCMDInstaller
 
 logger = logging.getLogger(__name__)
