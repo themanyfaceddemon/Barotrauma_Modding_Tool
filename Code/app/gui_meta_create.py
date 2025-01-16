@@ -2,8 +2,8 @@ import urllib.parse
 
 import dearpygui.dearpygui as dpg
 
-from Code.loc import Localization as loc
 from Code.app_vars import AppConfig
+from Code.loc import Localization as loc
 
 
 class GUIMetaTab:
@@ -19,7 +19,11 @@ class GUIMetaTab:
             dpg.add_checkbox(label="test", default_value=GUIMetaTab.create_file)
 
     @staticmethod
-    def generate_github_issue_link(mod_id, metadata_xml):
+    def _toggle_bool(value: bool) -> bool:
+        return not value
+
+    @staticmethod
+    def _generate_github_issue_link(mod_id, metadata_xml):
         params = {
             "template": "add_metadata_config.yml",
             "mod-id": str(mod_id),
