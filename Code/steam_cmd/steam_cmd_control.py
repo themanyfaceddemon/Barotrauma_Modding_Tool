@@ -2,6 +2,11 @@ import logging
 import os
 import subprocess
 import threading
+from pathlib import Path
+from typing import List
+
+import requests
+from bs4 import BeautifulSoup
 
 from Code.app_vars import AppConfig
 
@@ -69,7 +74,7 @@ class SteamCMDControl:
         cls._run_cmd(command)
 
     @classmethod
-    def download_item(cls, item_id: int):
+    def download_item(cls, item_id: int | str):
         cls.run_cmd(f"workshop_download_item {cls._GAME_ID} {item_id}")
 
         return (
@@ -78,3 +83,36 @@ class SteamCMDControl:
             / str(cls._GAME_ID)
             / str(item_id)
         )
+
+    @classmethod
+    def download_collection(cls, item_id: int | str) -> List[Path]:
+        try:
+            response = requests.get(AppConfig.steam_item_url + str(item_id))
+            response.raise_for_status()
+
+        except requests.RequestException as e:
+            logger.error(f"Error fetching collection data: {e}")
+            return []
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        items = soup.find_all("div", class_="collectionItem")
+
+        download_ids = [
+            item.get("id").split("_")[1] for item in items if item.get("id")
+        ]
+
+        download_paths = []
+        for item_id in download_ids:
+            try:
+                download_paths.append(cls.download_item(item_id))
+
+            except Exception as e:
+                logger.error(f"Error downloading item {item_id}: {e}")
+
+        return download_paths
+
+
+# TODO обновление модов
+# установку порядка (по сути почти сделано) и прочее.
+# Ебаная баробуба не позволяет ссылаться ни на что кроме как на "LocalMods" или "%LocalAppData%" при установке модов
+# TODO починить загрузку модификаций, ибо стим смд ДЕЛАЛИ ЕБАНЫЕ ПИДОРАСЫ СУКА КАК У МЕНЯ ГОРИТ ОЧКО

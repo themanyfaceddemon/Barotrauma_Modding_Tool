@@ -14,6 +14,8 @@ class AppConfig:
     _data_root: Path = _root / "Data"
     _user_data_path: Path = Path()
 
+    steam_item_url: str = "https://steamcommunity.com/sharedfiles/filedetails/?id="
+
     xml_system_dirs = [
         "filelist.xml",
         "metadata.xml",
