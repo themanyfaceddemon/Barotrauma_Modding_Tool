@@ -2,9 +2,7 @@ import argparse
 import logging
 import os
 import platform
-import sys
-from tkinter import Tk, messagebox
-from traceback import TracebackException
+import re
 from typing import Any, Type
 
 from colorama import Fore, Style, init
@@ -15,14 +13,7 @@ from Code.app_vars import AppConfig
 from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
-from Code.steam_cmd import SteamCMDControl
-
-
-def show_error_message(title, message):
-    root = Tk()
-    root.withdraw()
-    messagebox.showerror(title, message)
-    root.destroy()
+from error_message_tk import show_error_message_with_traceback
 
 
 class ColoredFormatter(logging.Formatter):
@@ -42,14 +33,17 @@ class ColoredFormatter(logging.Formatter):
 
 def configure_logging(debug: bool):
     log_level = logging.DEBUG if debug else logging.INFO
-
     log_format = "[%(asctime)s][%(levelname)s] %(name)s: %(message)s"
 
     console_handler = logging.StreamHandler()
     console_formatter = ColoredFormatter(log_format)
     console_handler.setFormatter(console_formatter)
 
-    logging.basicConfig(level=log_level, handlers=[console_handler], encoding="utf-8")
+    logging.basicConfig(
+        level=log_level,
+        handlers=[console_handler],
+        encoding="utf-8",
+    )
 
 
 def initialize_components(debug: bool, *components: Type[Any]) -> None:
@@ -66,6 +60,14 @@ def initialize_components(debug: bool, *components: Type[Any]) -> None:
             raise AttributeError(
                 f"{component.__name__} does not have a callable 'init' method."
             )
+
+
+def check_path_for_cyrillic():
+    script_path = os.path.abspath(__file__)
+    if re.compile(r"[а-яА-Я]").search(script_path):
+        raise RuntimeError(
+            f"The program installation path contains Cyrillic characters.\n\nCurrent path: {script_path}"
+        )
 
 
 def args_no_gui(
@@ -99,48 +101,35 @@ def args_no_gui(
         Game.run_game(skip_intro=skip_intro)
 
 
-def main(debug: bool) -> None:
+def main(debug: bool):
     logging.debug("Starting program...")
-    initialize_components(
-        debug, AppConfig, loc, ModManager, SteamCMDControl, AppInitializer
-    )
-    logging.debug("Initialization complete. Program is ready to run.")
-
-    logging.debug("App instance created. Running app...")
+    initialize_components(debug, AppConfig, loc, ModManager, AppInitializer)
+    logging.debug("Initialization complete.")
     App.run()
-    logging.debug("App run completed.")
+    logging.debug("Application terminated.")
 
 
 if __name__ == "__main__":
     try:
         init(autoreset=True)
+        check_path_for_cyrillic()
 
         parser = argparse.ArgumentParser()
         parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+        parser.add_argument("--ngui", action="store_true", help="Disable GUI startup")
         parser.add_argument(
-            "--ngui",
-            action="store_true",
-            help="Disables GUI startup, required to run other flags",
+            "--sg", action="store_true", help="Start the game automatically"
         )
         parser.add_argument(
-            "--sg", action="store_true", help="Automatically launch the game"
+            "--apath", action="store_true", help="Set the game path automatically"
         )
         parser.add_argument(
-            "--apath",
-            action="store_true",
-            help="Automatically set the path if it does not exist",
+            "--alua", action="store_true", help="Update/install Lua automatically"
         )
         parser.add_argument(
-            "--alua", action="store_true", help="Automatic update / installation of lua"
+            "--si", action="store_true", help="Skip intro (requires --sg)"
         )
-        parser.add_argument(
-            "--si", action="store_true", help="Skip intro. Doesn't work without --sg"
-        )
-        parser.add_argument(
-            "--pbmt",
-            action="store_true",
-            help="Enables processing of modifications to accept the work of disabled modules",
-        )
+        parser.add_argument("--pbmt", action="store_true", help="Process modifications")
         args = parser.parse_args()
 
         configure_logging(args.debug)
@@ -166,9 +155,6 @@ if __name__ == "__main__":
         else:
             main(args.debug)
 
-    except Exception:
-        exc_type, exc_value, exc_tb = sys.exc_info()
-        traceback_exception = TracebackException(exc_type, exc_value, exc_tb)  # type: ignore
-        error_message = "".join(traceback_exception.format())
-        show_error_message("Error Message", error_message)
-        input("Press Enter to exit...")
+    except Exception as e:
+        logging.critical("Unhandled exception occurred.", exc_info=True)
+        show_error_message_with_traceback("Error", e)
