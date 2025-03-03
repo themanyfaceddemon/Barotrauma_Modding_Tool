@@ -64,7 +64,7 @@ class AppInterface:
             parent="main_view_bar",
             callback=AppInterface.create_cac_window,
         )
-
+        
         is_latest = None
         try:
             response = requests.get(
