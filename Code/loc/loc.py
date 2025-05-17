@@ -32,6 +32,14 @@ class Localization:
         cls._translations.clear()
 
     @classmethod
+    def reload_translation(cls, lang: str) -> None:
+        cls._translations.clear()
+
+        loc_path = AppConfig.get_data_root_path() / "localization" / lang
+        if loc_path.exists():
+            cls.load_translations(loc_path)
+
+    @classmethod
     def load_translations(cls, folder_path: str | Path) -> None:
         """Рекурсивно загружает все файлы локализации (.loc) из указанной папки.
 
@@ -152,3 +160,8 @@ class Localization:
                 text = text.replace(f"{{{sub_key}}}", str(value))
 
         return text
+
+    @classmethod
+    def change_language(cls, new_lang: str) -> None:
+        AppConfig.set("lang", new_lang)
+        cls.reload_translation(new_lang)

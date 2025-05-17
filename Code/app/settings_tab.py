@@ -110,12 +110,24 @@ class SettingsTab:
                 items=list(loc_dict.values()),
                 label=loc.get_string("menu-language"),
                 default_value=loc_dict[AppConfig.get("lang", "eng")],  # type: ignore
-                callback=lambda s, a: AppConfig.set(
-                    "lang", next(key for key, value in loc_dict.items() if value == a)
-                ),
+                callback=lambda s, a: cls._on_language_changed(a, loc_dict),
+                tag="language_selector",
             )
-
         dpg_tools.rc_windows()
+
+    @staticmethod
+    def _on_language_changed(
+        selected_language: str, language_map: dict[str, str]
+    ) -> None:
+        new_lang = next(
+            code for code, name in language_map.items() if name == selected_language
+        )
+
+        loc.change_language(new_lang)
+
+        from Code.app.app_interface import AppInterface
+
+        AppInterface.rebuild_interface()
 
     @staticmethod
     def _validate_barotrauma_path(sender, app_data, user_data):
