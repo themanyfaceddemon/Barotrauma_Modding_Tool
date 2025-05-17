@@ -64,7 +64,7 @@ class AppInterface:
             parent="main_view_bar",
             callback=AppInterface.create_cac_window,
         )
-        
+
         is_latest = None
         try:
             response = requests.get(
@@ -246,3 +246,19 @@ class AppInterface:
                                         )
 
             dpg_tools.rc_windows()
+
+    @staticmethod
+    def rebuild_interface():
+        current_tab = dpg.get_value("main_tab_bar")
+
+        dpg.delete_item("main_tab_bar", children_only=True)
+
+        SettingsTab.create()
+        ModsTab.create()
+
+        dpg.set_value("main_tab_bar", current_tab)
+
+        dpg.delete_item("main_view_bar")
+        AppInterface._create_viewport_menu_bar()
+
+        dpg_tools.rc_windows()
