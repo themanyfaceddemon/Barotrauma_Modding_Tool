@@ -3,6 +3,8 @@ import logging
 import os
 import platform
 import re
+import signal
+import sys
 from typing import Any, Type
 
 from colorama import Fore, Style, init
@@ -13,6 +15,16 @@ from Code.app_vars import AppConfig
 from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
+
+
+def signal_handler(signum, frame):
+    logging.info(f"Received signal {signum}. Starting graceful shutdown...")
+    try:
+        App.stop()
+    except Exception as e:
+        logging.error(f"Error during graceful shutdown: {e}")
+    finally:
+        sys.exit(0)
 
 
 class ColoredFormatter(logging.Formatter):
@@ -102,10 +114,22 @@ def args_no_gui(
 
 def main(debug: bool):
     logging.debug("Starting program...")
-    initialize_components(debug, AppConfig, loc, ModManager, AppInitializer)
-    logging.debug("Initialization complete.")
-    App.run()
-    logging.debug("Application terminated.")
+    try:
+        signal.signal(signal.SIGTERM, signal_handler)
+        signal.signal(signal.SIGINT, signal_handler)
+    except Exception as e:
+        logging.warning(f"Failed to set up signal handlers: {e}")
+
+    try:
+        initialize_components(debug, AppConfig, loc, ModManager, AppInitializer)
+        logging.debug("Initialization complete.")
+        App.run()
+    except Exception as e:
+        logging.error(
+            f"Critical error during application execution: {e}", exc_info=True
+        )
+    finally:
+        logging.debug("Application terminated.")
 
 
 if __name__ == "__main__":

@@ -320,9 +320,10 @@ class ModManager:
 
     @staticmethod
     def _on_exit():
-        for mod in (
-            ModManager.active_mods + ModManager.inactive_mods
-        ):  # При неверном выходе пизда =)
+        try:
+            if not (ModManager.active_mods + ModManager.inactive_mods):
+                return
+
             game_path = AppConfig.get("barotrauma_dir", None)
             if not game_path:
                 logger.error("Game path not set!")
@@ -359,19 +360,29 @@ class ModManager:
 
             regularpackages.childrens.clear()
 
-            active_mod_id = set([mod.id for mod in ModManager.active_mods])
             for mod in ModManager.active_mods:
-                mod_path = mod.get_str_path()
-                regularpackages.add_child(XMLComment(mod.name))
-                regularpackages.add_child(
-                    XMLElement("package", {"path": f"{mod_path}/filelist.xml"})
-                )
+                try:
+                    mod_path = mod.get_str_path()
+                    regularpackages.add_child(XMLComment(mod.name))
+                    regularpackages.add_child(
+                        XMLElement("package", {"path": f"{mod_path}/filelist.xml"})
+                    )
 
-            del active_mod_id
+                    if mod.has_toggle_content:
+                        try:
+                            PartsManager.rollback_changes_no_thread(mod)
+                        except Exception as e:
+                            logger.error(
+                                f"Error rolling back changes for mod {mod.name}: {e}"
+                            )
+                except Exception as e:
+                    logger.error(f"Error processing mod {mod.name}: {e}")
+                    continue
 
             XMLBuilder.save(xml_obj, user_config_path)
-            if mod.has_toggle_content:
-                PartsManager.rollback_changes_no_thread(mod)
+
+        except Exception as e:
+            logger.error(f"Error during exit processing: {e}")
 
     @staticmethod
     def process_errors():
