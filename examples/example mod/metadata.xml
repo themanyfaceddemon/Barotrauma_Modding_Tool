@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
     <meta>
+        <name>Example Mod</name>
+        <version>1.0</version>
         <author>shangjiaxuan</author>
+        <description>This is an example mod for demonstration purposes.</description>
     </meta>
 
     <dependencies>

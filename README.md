@@ -13,6 +13,7 @@
 ## Examples
 - [Example of metadata for sorting modifications](./examples/metadata.xml)
 - [Example of disabled xml files from modifications](./examples/modparts.xml)
+- [Examples README](./examples/README.md): Detailed explanation of the example files and their usage.
 
 ---
 

@@ -30,16 +30,10 @@
         - <error>: Errors displayed to the user regardless of conditions. Each line represents a new error.
     -->
     <meta>
-        <author>Author's Name</author>
-        <license>License type here</license>
-
-        <warning>
-            Ensure compatible mods are installed.
-        </warning>
-
-        <error>
-            Mod loading failed due to incompatibility.
-        </error>
+        <name>Example Mod</name>
+        <version>1.0</version>
+        <author>Example Author</author>
+        <description>This is an example mod for demonstration purposes.</description>
     </meta>
 
     <!--

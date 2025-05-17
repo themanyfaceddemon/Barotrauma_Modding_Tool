@@ -23,4 +23,10 @@
 
     <!-- Example: Disabling afflictions for a mod -->
     <file file="%ModDir%/path/to/affliction.file" conditions="ifhas('5721')" type="Afflictions" setState="off" />
+
+    <!-- Example: Enabling a specific affliction file for a mod -->
+    <file file="%ModDir%/XML/Afflictions/ExampleAffliction.xml" conditions="ifhas('ExampleMod')" type="Afflictions" setState="on" />
+
+    <!-- Example: Enabling a specific item file for a mod -->
+    <file file="%ModDir%/XML/Items/ExampleItem.xml" conditions="ifhas('ExampleMod')" type="Item" setState="on" />
 </modparts>

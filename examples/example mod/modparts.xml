@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <modparts>
     <file file="%ModDir%/XML/Text/SimplifiedChinese.xml" conditions="ifhas('3329396988')" type="Text" setState="off" />
+    <!-- Example: Enabling a specific text file for a mod -->
+    <file file="%ModDir%/XML/Text/ExampleText.xml" conditions="ifhas('ExampleMod')" type="Text" setState="on" />
 </modparts>
