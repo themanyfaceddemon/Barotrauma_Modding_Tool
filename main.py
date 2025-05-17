@@ -13,7 +13,6 @@ from Code.app_vars import AppConfig
 from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
-from error_message_tk import show_error_message_with_traceback
 
 
 class ColoredFormatter(logging.Formatter):
@@ -62,11 +61,11 @@ def initialize_components(debug: bool, *components: Type[Any]) -> None:
             )
 
 
-def check_path_for_cyrillic():
+def check_path_for_non_ascii():
     script_path = os.path.abspath(__file__)
-    if re.compile(r"[а-яА-Я]").search(script_path):
+    if re.search(r"[^\x00-\x7F]", script_path):
         raise RuntimeError(
-            f"The program installation path contains Cyrillic characters.\n\nCurrent path: {script_path}"
+            f"The program installation path contains non-ASCII characters.\n\nCurrent path: {script_path}"
         )
 
 
@@ -112,7 +111,7 @@ def main(debug: bool):
 if __name__ == "__main__":
     try:
         init(autoreset=True)
-        check_path_for_cyrillic()
+        check_path_for_non_ascii()
 
         parser = argparse.ArgumentParser()
         parser.add_argument("--debug", action="store_true", help="Enable debug mode")
@@ -151,6 +150,6 @@ if __name__ == "__main__":
         else:
             main(args.debug)
 
-    except Exception as e:
+    except Exception:
         logging.critical("Unhandled exception occurred.", exc_info=True)
-        show_error_message_with_traceback("Error", e)
+        input()
