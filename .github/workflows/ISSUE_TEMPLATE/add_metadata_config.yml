@@ -1,0 +1,51 @@
+name: "Request to add metadata"
+description: Create a new ticket to request adding a metadata.
+title: "[REQUEST] - Add metadata"
+labels: [
+  "Metadata Request"
+]
+body:
+  - type: input
+    id: mod-id
+    attributes:
+      label: "Mod ID"
+      description: Please provide the ID of the mod.
+      placeholder: ex. 123456
+    validations:
+      required: true
+  - type: textarea
+    id: metadata
+    attributes:
+      label: "Metadata Configuration"
+      description: Please provide the XML metadata configuration.
+      value: |
+        <?xml version="1.0" encoding="UTF-8"?>
+        <metadata>
+            <settings>
+                <setting name="IgnoreLUACheck" value="false" />
+                <setting name="DisableCSDLLCheck" value="false" />
+                <setting name="IgnoreOverrideCheck" value="false" />
+            </settings>
+
+            <meta>
+                <author>Author's Name</author>
+                <license>License type here</license>
+
+                <warning>
+                    Ensure compatible mods are installed.
+                </warning>
+
+                <error>
+                    Mod loading failed due to incompatibility.
+                </error>
+            </meta>
+
+            <dependencies>
+                <patch name="Some mod name in filelist.xml" steamID="123" condition="None"/>
+                <requirement name="Some mod name in filelist.xml" steamID="123" condition="None" />
+                <requiredAnyOrder name="Some mod name in filelist.xml" steamID="123" />
+                <conflict name="Some mod name in filelist.xml" steamID="123" message="Conflict detected" level="error" />
+            </dependencies>
+        </metadata>
+    validations:
+      required: true
