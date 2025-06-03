@@ -12,6 +12,7 @@ from colorama import Fore, Style, init
 from Code.app import App
 from Code.app.app_initializer import AppInitializer
 from Code.app_vars import AppConfig
+from Code.dpg_tools import ViewportResizeManager
 from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
@@ -121,7 +122,9 @@ def main(debug: bool):
         logging.warning(f"Failed to set up signal handlers: {e}")
 
     try:
-        initialize_components(debug, AppConfig, loc, ModManager, AppInitializer)
+        initialize_components(
+            debug, AppConfig, loc, ModManager, AppInitializer, ViewportResizeManager
+        )
         logging.debug("Initialization complete.")
         App.run()
     except Exception as e:

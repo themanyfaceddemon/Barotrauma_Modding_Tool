@@ -7,10 +7,12 @@ import requests
 
 import Code.dpg_tools as dpg_tools
 from Code.app_vars import AppConfig
+from Code.dpg_tools import ViewportResizeManager
 from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
 
+from .experimental_tab import ExperimentalTab
 from .mods_tab import ModsTab
 from .settings_tab import SettingsTab
 
@@ -24,20 +26,10 @@ class AppInterface:
         AppInterface._create_main_window()
         SettingsTab.create()
         ModsTab.create()
+        if AppConfig.get("experimental"):
+            ExperimentalTab.create()
 
         dpg.set_value("main_tab_bar", "mod_tab")
-
-        dpg.set_viewport_resize_callback(AppInterface._res_callback)
-        dpg_tools.rc_windows()
-
-    @staticmethod
-    def _res_callback() -> None:
-        dpg_tools.rc_windows()
-
-        AppConfig.set(
-            "last_viewport_size",
-            f"{dpg.get_viewport_width()} {dpg.get_viewport_height()}",
-        )
 
     @staticmethod
     def _create_main_window():
@@ -48,6 +40,32 @@ class AppInterface:
             tag="main_window",
         ):
             dpg.add_tab_bar(tag="main_tab_bar")
+            ViewportResizeManager.add_callback(
+                "main_window", AppInterface._res_callback
+            )
+            ViewportResizeManager.add_callback(
+                "settings_save", AppInterface._res_settings_callback
+            )
+
+    @staticmethod
+    def _res_settings_callback(app_data) -> None:
+        AppConfig.set(
+            "last_viewport_size",
+            f"{app_data[0]} {app_data[1]}",
+        )
+
+    @staticmethod
+    def _res_callback(app_data) -> None:
+        if dpg.does_alias_exist("main_window"):
+            dpg.configure_item(
+                "main_window", width=app_data[0] - 40, height=app_data[1] - 80
+            )
+            dpg.set_item_pos(
+                "main_window",
+                [(app_data[0] - app_data[2]) // 2, (app_data[1] - app_data[3]) // 2],
+            )
+        else:
+            ViewportResizeManager.remove_callback("main_window")
 
     @staticmethod
     def _create_viewport_menu_bar():
@@ -261,4 +279,4 @@ class AppInterface:
         dpg.delete_item("main_view_bar")
         AppInterface._create_viewport_menu_bar()
 
-        dpg_tools.rc_windows()
+        ViewportResizeManager.invoke()

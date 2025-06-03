@@ -10,6 +10,7 @@ from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
 
+from .experimental_tab import ExperimentalTab
 from .mods_tab import ModsTab
 
 logger = logging.getLogger(__name__)
@@ -90,7 +91,7 @@ class SettingsTab:
                     dpg.add_checkbox(
                         label=loc.get_string("menu-toggle-experimental"),
                         default_value=AppConfig.get("experimental", False),  # type: ignore
-                        callback=lambda s, a: AppConfig.set("experimental", a),
+                        callback=cls._on_exp_ch,
                     )
             dpg.add_separator()
             dpg.add_separator()
@@ -113,7 +114,14 @@ class SettingsTab:
                 callback=lambda s, a: cls._on_language_changed(a, loc_dict),
                 tag="language_selector",
             )
-        dpg_tools.rc_windows()
+
+    @staticmethod
+    def _on_exp_ch(sender, app_data, user_data):
+        AppConfig.set("experimental", app_data)
+        if app_data:
+            ExperimentalTab.create()
+        else:
+            ExperimentalTab.destroy()
 
     @staticmethod
     def _on_language_changed(

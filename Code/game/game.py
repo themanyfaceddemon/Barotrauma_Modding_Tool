@@ -23,6 +23,33 @@ class Game:
         "Linux": "Barotrauma",
     }
 
+    if platform.system() == "Windows":
+        _SYSTEM_DIRS = [
+            Path("C:\\Windows"),
+            Path("C:\\Program Files"),
+            Path("C:\\Program Files (x86)"),
+        ]
+    else:
+        _SYSTEM_DIRS = [
+            Path("/usr"),
+            Path("/etc"),
+            Path("/bin"),
+            Path("/sys"),
+            Path("/sbin"),
+            Path("/proc"),
+            Path("/dev"),
+            Path("/run"),
+            Path("/tmp"),
+            Path("/var"),
+            Path("/boot"),
+            Path("/lib"),
+            Path("/lib64"),
+            Path("/opt"),
+            Path("/lost+found"),
+            Path("/snap"),
+            Path("/srv"),
+        ]
+
     _LUA = {
         "Windows": (
             "https://github.com/Luatrauma/Luatrauma.AutoUpdater/releases/download/latest/Luatrauma.AutoUpdater.win-x64.exe",
@@ -206,35 +233,9 @@ class Game:
     @staticmethod
     def _is_system_directory(path):
         if platform.system() == "Windows":
-            system_dirs = [
-                Path("C:\\Windows"),
-                Path("C:\\Program Files"),
-                Path("C:\\Program Files (x86)"),
-            ]
-            return path in system_dirs or path.is_relative_to(Path("C:\\Windows"))
+            return path in Game._SYSTEM_DIRS or path.is_relative_to(Path("C:\\Windows"))
 
-        else:
-            system_dirs = [
-                Path("/usr"),
-                Path("/etc"),
-                Path("/bin"),
-                Path("/sys"),
-                Path("/sbin"),
-                Path("/proc"),
-                Path("/dev"),
-                Path("/run"),
-                Path("/tmp"),
-                Path("/var"),
-                Path("/boot"),
-                Path("/lib"),
-                Path("/lib64"),
-                Path("/opt"),
-                Path("/lost+found"),
-                Path("/snap"),
-                Path("/srv"),
-            ]
-
-            return path in system_dirs
+        return path in Game._SYSTEM_DIRS
 
     @staticmethod
     def _should_ignore_directory(entry, current_dir, game_name):

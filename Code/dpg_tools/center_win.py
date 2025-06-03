@@ -2,12 +2,9 @@ import dearpygui.dearpygui as dpg
 
 WINDOWS_CFG = {  # magic value
     "main_window": (1.0, True),
-    "baro_window": (1.0, True),
     "find_game_window": (1.0, True),
-    "game_config_window": (1.0, True),
     "cac_window": (1.0, True),
     "debug_console": (1.0, True),
-    "settings_window": (1.0, True),
     "active_mod_search_tag": (0.5, False),
     "active_mods_child": (0.5, False),
     "inactive_mod_search_tag": (0.5, False),
