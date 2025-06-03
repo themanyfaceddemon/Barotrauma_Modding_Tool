@@ -23,32 +23,41 @@ class Game:
         "Linux": "Barotrauma",
     }
 
-    if platform.system() == "Windows":
-        _SYSTEM_DIRS = [
-            Path("C:\\Windows"),
-            Path("C:\\Program Files"),
-            Path("C:\\Program Files (x86)"),
-        ]
-    else:
-        _SYSTEM_DIRS = [
-            Path("/usr"),
-            Path("/etc"),
-            Path("/bin"),
-            Path("/sys"),
-            Path("/sbin"),
-            Path("/proc"),
-            Path("/dev"),
-            Path("/run"),
-            Path("/tmp"),
-            Path("/var"),
-            Path("/boot"),
-            Path("/lib"),
-            Path("/lib64"),
-            Path("/opt"),
-            Path("/lost+found"),
-            Path("/snap"),
-            Path("/srv"),
-        ]
+    _SYSTEM_DIRS = {
+        "Windows": [
+            "C:\\Windows",
+            "C:\\Program Files",
+            "C:\\Program Files (x86)",
+        ],
+        "Linux": [
+            "/usr",
+            "/etc",
+            "/bin",
+            "/sys",
+            "/sbin",
+            "/proc",
+            "/dev",
+            "/run",
+            "/tmp",
+            "/var",
+            "/boot",
+            "/lib",
+            "/lib64",
+            "/opt",
+            "/lost+found",
+            "/snap",
+            "/srv",
+        ],
+        "Darwin": [
+            "/usr",
+            "/etc",
+            "/bin",
+            "/sbin",
+            "/System",
+            "/Library",
+        ],
+    }
+    _SYSTEM_DIRS = [Path(p) for p in _SYSTEM_DIRS.get(platform.system(), [])]
 
     _LUA = {
         "Windows": (
@@ -70,8 +79,8 @@ class Game:
         if install_lua:
             Game.download_update_lua()
 
-        parms = ["-skipintro"] if skip_intro else []
-        Game.run_exec(parms)
+        args = ["-skipintro"] if skip_intro else []
+        Game.run_exec(args)
 
     @staticmethod
     def download_update_lua():
@@ -177,7 +186,7 @@ class Game:
                         dir_to_visit = dirs_to_visit.pop()
                         logger.debug(f"Processing directory: {dir_to_visit}")
 
-                        if Game._is_system_directory(dir_to_visit):
+                        if Game._is_system_dir(dir_to_visit):
                             logger.debug(f"Skipping system folder: {dir_to_visit}")
                             continue
 
@@ -231,14 +240,20 @@ class Game:
         return valid_paths
 
     @staticmethod
-    def _is_system_directory(path):
-        if platform.system() == "Windows":
-            return path in Game._SYSTEM_DIRS or path.is_relative_to(Path("C:\\Windows"))
-
-        return path in Game._SYSTEM_DIRS
+    def _is_system_dir(path: Path) -> bool:
+        path = path.resolve()
+        for sys_dir in Game._SYSTEM_DIRS:
+            try:
+                if path == sys_dir or path.is_relative_to(sys_dir):
+                    return True
+            except ValueError:
+                continue
+        return False
 
     @staticmethod
-    def _should_ignore_directory(entry, current_dir, game_name):
+    def _should_ignore_directory(
+        entry: Path, current_dir: Path, game_name: str
+    ) -> bool:
         ignored_directories = {
             "appdata",
             "temp",
