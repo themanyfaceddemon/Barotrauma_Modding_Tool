@@ -4,8 +4,8 @@ from pathlib import Path
 
 import dearpygui.dearpygui as dpg
 
-import Code.dpg_tools as dpg_tools
 from Code.app_vars import AppConfig
+from Code.dpg_tools import ViewportResizeManager
 from Code.game import Game
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
@@ -219,7 +219,22 @@ class SettingsTab:
                     callback=lambda s, a: dpg.delete_item("find_game_window"),
                 )
 
-        dpg_tools.rc_windows()
+        ViewportResizeManager.add_callback(
+            "find_game_window", SettingsTab._res_callback
+        )
+
+    @staticmethod
+    def _res_callback(app_data) -> None:
+        if dpg.does_item_exist("main_window"):
+            dpg.configure_item(
+                "find_game_window", width=app_data[0] - 40, height=app_data[1] - 80
+            )
+            dpg.set_item_pos(
+                "find_game_window",
+                [(app_data[0] - app_data[2]) // 2, (app_data[1] - app_data[3]) // 2],
+            )
+        else:
+            ViewportResizeManager.remove_callback("find_game_window")
 
     @classmethod
     def _start_search(cls):

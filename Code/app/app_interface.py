@@ -56,7 +56,7 @@ class AppInterface:
 
     @staticmethod
     def _res_callback(app_data) -> None:
-        if dpg.does_alias_exist("main_window"):
+        if dpg.does_item_exist("main_window"):
             dpg.configure_item(
                 "main_window", width=app_data[0] - 40, height=app_data[1] - 80
             )
