@@ -5,7 +5,6 @@ import webbrowser
 import dearpygui.dearpygui as dpg
 import requests
 
-import Code.dpg_tools as dpg_tools
 from Code.app_vars import AppConfig
 from Code.dpg_tools import ViewportResizeManager
 from Code.game import Game
@@ -169,7 +168,22 @@ class AppInterface:
                 callback=AppInterface._process_command,
             )
 
-        dpg_tools.rc_windows()
+        ViewportResizeManager.add_callback(
+            "debug_console", AppInterface._res_deb_callback
+        )
+
+    @staticmethod
+    def _res_deb_callback(app_data) -> None:
+        if dpg.does_item_exist("debug_console"):
+            dpg.configure_item(
+                "debug_console", width=app_data[0] - 40, height=app_data[1] - 80
+            )
+            dpg.set_item_pos(
+                "debug_console",
+                [(app_data[0] - app_data[2]) // 2, (app_data[1] - app_data[3]) // 2],
+            )
+        else:
+            ViewportResizeManager.remove_callback("debug_console")
 
     @staticmethod
     def start_game():
@@ -263,7 +277,22 @@ class AppInterface:
                                             wrap=0,
                                         )
 
-            dpg_tools.rc_windows()
+            ViewportResizeManager.add_callback(
+                "cac_window", AppInterface._res_cac_callback
+            )
+
+    @staticmethod
+    def _res_cac_callback(app_data) -> None:
+        if dpg.does_item_exist("cac_window"):
+            dpg.configure_item(
+                "cac_window", width=app_data[0] - 40, height=app_data[1] - 80
+            )
+            dpg.set_item_pos(
+                "cac_window",
+                [(app_data[0] - app_data[2]) // 2, (app_data[1] - app_data[3]) // 2],
+            )
+        else:
+            ViewportResizeManager.remove_callback("cac_window")
 
     @staticmethod
     def rebuild_interface():

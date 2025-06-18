@@ -3,6 +3,7 @@ import logging
 import dearpygui.dearpygui as dpg
 
 from Code.app_vars import AppConfig
+from Code.dpg_tools import ViewportResizeManager
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
 from Code.package import ModUnit
@@ -103,7 +104,21 @@ class ModsTab:
                     ):
                         pass
 
+        ViewportResizeManager.add_callback("mod_tab", ModsTab._on_resize)
         ModsTab.render_mods()
+
+    @staticmethod
+    def _on_resize(app_data):
+        l_width = (app_data[0] - 40) * 0.5
+        l_height = (app_data[1] - 80) * 0.5
+        for item_tag in [
+            "active_mod_search_tag",
+            "active_mods_child",
+            "inactive_mod_search_tag",
+            "inactive_mods_child",
+        ]:
+            if dpg.does_item_exist(item_tag):
+                dpg.configure_item(item_tag, width=l_width, height=l_height)
 
     @staticmethod
     def on_search_changed(sender, app_data, user_data):
