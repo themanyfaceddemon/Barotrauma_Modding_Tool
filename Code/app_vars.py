@@ -5,6 +5,8 @@ import platform
 from pathlib import Path
 from typing import Any, Dict, Final, Optional
 
+logger = logging.getLogger(__name__)
+
 
 class AppConfig:
     user_config: Dict[str, Any] = {}
@@ -59,7 +61,7 @@ class AppConfig:
                     cls.user_config = json.load(file)
 
             except json.JSONDecodeError as err:
-                logging.error(f"Error while decoding user_config.json: {err}")
+                logger.error(f"Error while decoding user_config.json: {err}")
 
     @classmethod
     def _save_user_config(cls) -> None:
@@ -86,14 +88,13 @@ class AppConfig:
         game_path = cls.user_config.get("barotrauma_dir")
 
         if game_path is None:
-            logging.error("Game path not set!")
             return
 
         else:
             game_path = Path(game_path)
 
         if not game_path.exists():
-            logging.error(f"Game path dont exists!\n|Path: {game_path}")
+            logger.error(f"Game path dont exists!\n|Path: {game_path}")
             return
 
         return game_path

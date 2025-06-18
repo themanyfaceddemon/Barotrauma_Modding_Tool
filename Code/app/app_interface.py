@@ -57,12 +57,11 @@ class AppInterface:
     def _res_callback(app_data) -> None:
         if dpg.does_item_exist("main_window"):
             dpg.configure_item(
-                "main_window", width=app_data[0] - 40, height=app_data[1] - 80
-            )
-            dpg.set_item_pos(
                 "main_window",
-                [(app_data[0] - app_data[2]) // 2, (app_data[1] - app_data[3]) // 2],
+                width=app_data[2] - 40,
+                height=app_data[3] - 80,
             )
+            dpg.set_item_pos("main_window", [20, 40])
         else:
             ViewportResizeManager.remove_callback("main_window")
 
@@ -85,7 +84,8 @@ class AppInterface:
         is_latest = None
         try:
             response = requests.get(
-                "https://api.github.com/repos/themanyfaceddemon/Barotrauma_Modding_Tool/releases/latest"
+                "https://api.github.com/repos/themanyfaceddemon/Barotrauma_Modding_Tool/releases/latest",
+                timeout=5,
             )
             if response.status_code == 200:
                 latest_release = response.json()
@@ -176,12 +176,11 @@ class AppInterface:
     def _res_deb_callback(app_data) -> None:
         if dpg.does_item_exist("debug_console"):
             dpg.configure_item(
-                "debug_console", width=app_data[0] - 40, height=app_data[1] - 80
-            )
-            dpg.set_item_pos(
                 "debug_console",
-                [(app_data[0] - app_data[2]) // 2, (app_data[1] - app_data[3]) // 2],
+                width=app_data[2] - 40,
+                height=app_data[3] - 80,
             )
+            dpg.set_item_pos("debug_console", [20, 40])
         else:
             ViewportResizeManager.remove_callback("debug_console")
 
@@ -285,12 +284,11 @@ class AppInterface:
     def _res_cac_callback(app_data) -> None:
         if dpg.does_item_exist("cac_window"):
             dpg.configure_item(
-                "cac_window", width=app_data[0] - 40, height=app_data[1] - 80
-            )
-            dpg.set_item_pos(
                 "cac_window",
-                [(app_data[0] - app_data[2]) // 2, (app_data[1] - app_data[3]) // 2],
+                width=app_data[2] - 40,
+                height=app_data[3] - 80,
             )
+            dpg.set_item_pos("cac_window", [20, 40])
         else:
             ViewportResizeManager.remove_callback("cac_window")
 
