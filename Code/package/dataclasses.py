@@ -199,6 +199,9 @@ class ModUnit(Identifier):
                     f"The program does not support core packages!\n|Mod details: '{obj.name}' | Steam ID: '{obj.steam_id}'"
                 )
                 return None
+            
+            if AppConfig.get("experimental-hash", False):
+                
 
             obj.path = path
             obj.use_lua = ModUnit.has_file(path, ".[Ll][Uu][Aa]")

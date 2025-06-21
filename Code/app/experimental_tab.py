@@ -37,20 +37,20 @@ class ExperimentalTab:
 
             dpg.add_checkbox(
                 label="Кеширование аддонов",
-                callback=cls._on_cash_toggle,
+                callback=cls._on_hash_toggle,
             )
 
     @classmethod
-    def _on_cash_toggle(cls, sender, app_data, user_data):
-        AppConfig.set("experimental-cash", app_data)
+    def _on_hash_toggle(cls, sender, app_data, user_data):
+        AppConfig.set("experimental-hash", app_data)
 
         if app_data:
-            path = AppConfig.get_data_root_path() / ".cash"
+            path = AppConfig.get_data_root_path() / ".hash"
             path.mkdir(exist_ok=True)
             with open((path / ".bmtm"), "w") as f:
                 f.write("v1")
         else:
-            path = AppConfig.get_data_root_path() / ".cash"
+            path = AppConfig.get_data_root_path() / ".hash"
             if path.exists():
                 shutil.rmtree(path)
 
