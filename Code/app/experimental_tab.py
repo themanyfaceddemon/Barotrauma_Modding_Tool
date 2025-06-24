@@ -4,7 +4,7 @@ import webbrowser
 
 import dearpygui.dearpygui as dpg
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 from Code.loc import Localization as loc
 
 logger = logging.getLogger(__name__)
@@ -26,10 +26,7 @@ class ExperimentalTab:
             )
             dpg.add_button(
                 label="Открыть репозиторий",
-                callback=lambda: webbrowser.open(
-                    "https://github.com/themanyfaceddemon/Barotrauma_Modding_Tool/issues",
-                    2,
-                ),
+                callback=lambda: webbrowser.open(f"{AppConfig.app_github}/issues", 2),
             )
 
             dpg.add_separator()

@@ -11,18 +11,25 @@ logger = logging.getLogger(__name__)
 class AppConfig:
     user_config: Dict[str, Any] = {}
     version: Final[str] = "0.2.1"
+    app_name: Final[str] = "Barotrauma Modding Tool"
+    app_github: Final[str] = (
+        "https://github.com/themanyfaceddemon/Barotrauma_Modding_Tool"
+    )
+    app_github_api: Final[str] = (
+        "https://api.github.com/repos/themanyfaceddemon/Barotrauma_Modding_Tool"
+    )
 
     _root: Path = Path(__file__).parents[1]
     _data_root: Path = _root / "Data"
     _user_data_path: Path = Path()
 
     xml_system_dirs = [
-        "filelist.xml",
-        "metadata.xml",
-        "modparts.xml",
-        "file_list.xml",
-        "files_list.xml",
-        "runconfig.xml",
+        "filelist.xml",  # Vanila barotrauma
+        "file_list.xml",  # Luatrauma
+        "files_list.xml",  # Luatrauma
+        "runconfig.xml",  # Luatrauma
+        "metadata.xml",  # Barotrauma modding tool
+        "modparts.xml",  # Barotrauma modding tool
     ]
 
     @classmethod
@@ -118,39 +125,20 @@ class AppConfig:
     @classmethod
     def set_steam_mods_path(cls) -> None:
         if platform.system() == "Windows":
-            path_to_mod = (
-                Path.home()
-                / "AppData"
-                / "Local"
-                / "Daedalic Entertainment GmbH"
-                / "Barotrauma"
-                / "WorkshopMods"
-                / "Installed"
-            )
+            path_to_mod = Path.home() / "AppData/Local"
 
         elif platform.system() == "Linux":
-            path_to_mod = (
-                Path.home()
-                / ".local"
-                / "share"
-                / "Daedalic Entertainment GmbH"
-                / "Barotrauma"
-                / "WorkshopMods"
-                / "Installed"
-            )
+            path_to_mod = Path.home() / ".local/share"
 
         elif platform.system() == "Darwin":
-            path_to_mod = (
-                Path.home()
-                / "Library"
-                / "Application Support"
-                / "Daedalic Entertainment GmbH"
-                / "Barotrauma"
-                / "WorkshopMods"
-                / "Installed"
-            )
+            path_to_mod = Path.home() / "Library/Application Support"
 
         else:
             raise RuntimeError("Unknown operating system")
+
+        path_to_mod = (
+            path_to_mod
+            / "Daedalic Entertainment GmbH/Barotrauma/WorkshopMods/Installed"
+        )
 
         AppConfig.set("steam_mod_dir", str(path_to_mod))

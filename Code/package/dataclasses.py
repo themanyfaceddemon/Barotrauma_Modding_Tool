@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Set
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 from Code.xml_object import XMLBuilder
 
 from .id_parser import extract_ids
@@ -199,9 +199,6 @@ class ModUnit(Identifier):
                     f"The program does not support core packages!\n|Mod details: '{obj.name}' | Steam ID: '{obj.steam_id}'"
                 )
                 return None
-            
-            if AppConfig.get("experimental-hash", False):
-                
 
             obj.path = path
             obj.use_lua = ModUnit.has_file(path, ".[Ll][Uu][Aa]")

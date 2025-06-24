@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Optional
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 from Code.loc import Localization as loc
 from Code.package.dataclasses import ModUnit
 from Code.xml_object import XMLBuilder, XMLComment, XMLElement

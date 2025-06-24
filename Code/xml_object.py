@@ -397,7 +397,7 @@ class XMLElement(XMLBaseStruct):
         Tuple["XMLComment", List[Union["XMLElement", "XMLComment"]], "XMLComment"],
         None,
         None,
-    ]:  # type: ignore
+    ]:
         start_comment = None
         end_comment = None
         elements_between = []

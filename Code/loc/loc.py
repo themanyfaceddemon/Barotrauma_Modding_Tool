@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, Optional
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 
 """
 Пример .loc

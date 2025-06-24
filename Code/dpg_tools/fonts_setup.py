@@ -1,6 +1,6 @@
 import dearpygui.dearpygui as dpg
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 
 
 class FontManager:

@@ -2,7 +2,7 @@ import logging
 
 import dearpygui.dearpygui as dpg
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 from Code.dpg_tools import ViewportResizeManager
 from Code.handlers import ModManager
 from Code.loc import Localization as loc

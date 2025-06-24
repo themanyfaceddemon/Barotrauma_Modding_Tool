@@ -5,7 +5,7 @@ import webbrowser
 import dearpygui.dearpygui as dpg
 import requests
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 from Code.dpg_tools import ViewportResizeManager
 from Code.game import Game
 from Code.handlers import ModManager
@@ -84,7 +84,7 @@ class AppInterface:
         is_latest = None
         try:
             response = requests.get(
-                "https://api.github.com/repos/themanyfaceddemon/Barotrauma_Modding_Tool/releases/latest",
+                f"{AppConfig.app_github_api}/releases/latest",
                 timeout=5,
             )
             if response.status_code == 200:
@@ -106,9 +106,7 @@ class AppInterface:
         dpg.add_menu_item(
             label=(loc.get_string("cur-version-latest") + " " + label),
             parent="main_view_bar",
-            callback=lambda: webbrowser.open(
-                "https://github.com/themanyfaceddemon/Barotrauma_Modding_Tool/releases/latest"
-            ),
+            callback=lambda: webbrowser.open(f"{AppConfig.app_github}/releases/latest"),
             enabled=(is_latest is False),
         )
 
@@ -196,7 +194,7 @@ class AppInterface:
         skip_intro = AppConfig.get("game_config_skip_intro", False)
         auto_install_lua = AppConfig.get("game_config_auto_lua", False)
         try:
-            Game.run_game(auto_install_lua, skip_intro)  # type: ignore
+            Game.run_game(auto_install_lua, skip_intro) 
 
         except Exception as err:
             AppInterface.show_error(err)
