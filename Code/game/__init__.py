@@ -1,3 +1,3 @@
 from .game import Game
-from .game_finder import GameFinder
+from .game_finder import Finder
 from .updater import Updater

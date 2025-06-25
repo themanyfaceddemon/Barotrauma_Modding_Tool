@@ -7,7 +7,7 @@ import re
 from colorama import Fore, Style, init
 
 from Code.app_config import AppConfig
-from Code.game import Game, GameFinder, Updater
+from Code.game import Finder, Game, Updater
 from Code.gui.app import App
 from Code.handlers import ModManager
 
@@ -60,7 +60,7 @@ def args_no_gui(
     if auto_game_path:
         game_path = AppConfig.get_game_path()
         if game_path is None:
-            res = GameFinder.search_game()
+            res = Finder.search()
             if res:
                 AppConfig.set("barotrauma_dir", str(res[0]))
                 AppConfig.set_steam_mods_path()
@@ -78,7 +78,7 @@ def args_no_gui(
         ModManager.save_mods()
 
     if start_game:
-        Game.run_game(skip_intro=skip_intro)
+        Game.run(skip_intro=skip_intro)
 
 
 def main(debug: bool):

@@ -99,6 +99,7 @@ class App:
         cls._init_viewport()
 
         dpg.start_dearpygui()
+        dpg.destroy_context()
 
     @classmethod
     def stop(cls) -> None:

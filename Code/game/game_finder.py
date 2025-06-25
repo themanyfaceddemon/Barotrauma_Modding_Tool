@@ -11,7 +11,7 @@ from typing import List
 logger = logging.getLogger(__name__)
 
 
-class GameFinder:
+class Finder:
     _SYSTEM_DIRS = {
         "Windows": [
             "C:\\Windows",
@@ -107,7 +107,7 @@ class GameFinder:
         return False
 
     @classmethod
-    def search_game(cls) -> List[Path]:
+    def search(cls) -> List[Path]:
         game_name = "barotrauma"
 
         if platform.system() == "Windows":

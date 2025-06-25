@@ -6,7 +6,7 @@ import dearpygui.dearpygui as dpg
 
 from Code.app_config import AppConfig
 from Code.dpg_tools import ViewportResizeManager
-from Code.game import GameFinder
+from Code.game import Finder
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
 
@@ -251,7 +251,7 @@ class SettingsTab:
         )
         dpg.add_loading_indicator(style=2, parent="find_game_window")
 
-        results = GameFinder.search_game()
+        results = Finder.search()
         dpg.delete_item("find_game_window", children_only=True)
 
         if results:

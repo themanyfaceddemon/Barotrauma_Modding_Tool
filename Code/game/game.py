@@ -18,15 +18,15 @@ class Game:
     }
 
     @staticmethod
-    def run_game(install_lua: bool = False, skip_intro: bool = False):
+    def run(install_lua: bool = False, skip_intro: bool = False):
         if install_lua:
             Updater.download()
 
         args = ["-skipintro"] if skip_intro else []
-        Game.run_exec(args)
+        Game._run_pe(args)
 
     @staticmethod
-    def run_exec(parms: List[str] = []):
+    def _run_pe(parms: List[str] = []):
         try:
             exec_file = Game._EXECUTABLES.get(platform.system())
             if exec_file is None:

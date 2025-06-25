@@ -194,7 +194,7 @@ class AppInterface:
         skip_intro = AppConfig.get("game_config_skip_intro", False)
         auto_install_lua = AppConfig.get("game_config_auto_lua", False)
         try:
-            Game.run_game(auto_install_lua, skip_intro) 
+            Game.run(auto_install_lua, skip_intro)
 
         except Exception as err:
             AppInterface.show_error(err)
