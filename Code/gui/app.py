@@ -7,7 +7,7 @@ import dearpygui.dearpygui as dpg
 
 from Code.app_config import AppConfig
 from Code.dpg_tools import FontManager, ViewportResizeManager
-from Code.gui.main_window import create_window as create_main_window
+from Code.gui.windows import MainWindow
 from Code.handlers import ModManager
 from Code.loc import Localization as loc
 
@@ -99,7 +99,7 @@ class App:
         cls._init_components()
         cls._init_viewport()
 
-        create_main_window()
+        MainWindow.create()
 
         dpg.start_dearpygui()
         dpg.destroy_context()
