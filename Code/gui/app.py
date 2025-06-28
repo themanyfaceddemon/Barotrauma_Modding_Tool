@@ -100,6 +100,21 @@ class App:
         cls._init_viewport()
 
         MainWindow.create()
+        MainWindow.add_button(
+            "open_mod_manager",
+            "open_mod_manager_btn",
+            MainWindow.create,
+        )
+        MainWindow.add_button(
+            "open_settings",
+            "open_settings_btn",
+            MainWindow.create,
+        )
+        MainWindow.add_button(
+            "open_experimental_settings",
+            "open_experimental_settings_btn",
+            MainWindow.rebuild,
+        )
 
         dpg.start_dearpygui()
         dpg.destroy_context()
