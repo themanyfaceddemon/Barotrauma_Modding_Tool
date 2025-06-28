@@ -65,6 +65,30 @@ class MainWindow(BaseWindow):
         ViewportResizeManager.add_callback(cls._window_name, cls._on_window_resize)
 
     @classmethod
+    def rebuild(cls) -> None:
+        if dpg.does_item_exist("version_info_text"):
+            dpg.delete_item("version_info_text")
+
+        dpg.add_text(
+            Localization.get_string("version_info", version=AppConfig.version),
+            tag="version_info_text",
+            parent=cls._window_name,
+        )
+
+        for key in cls._btn_order:
+            btn_info = cls._dict_of_btn[key]
+            if dpg.does_item_exist(btn_info.id):
+                dpg.delete_item(btn_info.id)
+
+            new_id = dpg.add_button(
+                label=Localization.get_string(btn_info.label),
+                callback=btn_info.func,
+                parent=cls._window_name,
+            )
+            btn_info.id = int(new_id)
+        ViewportResizeManager.invoke()
+
+    @classmethod
     def add_button(cls, name: str, label_id: str, func: Callable) -> None:
         if name in cls._dict_of_btn:
             return
@@ -82,20 +106,6 @@ class MainWindow(BaseWindow):
         ViewportResizeManager.invoke()
 
     @classmethod
-    def rebuild_buttons(cls) -> None:
-        for key in cls._btn_order:
-            btn_info = cls._dict_of_btn[key]
-            if dpg.does_item_exist(btn_info.id):
-                dpg.delete_item(btn_info.id)
-
-            new_id = dpg.add_button(
-                label=Localization.get_string(btn_info.label),
-                callback=btn_info.func,
-                parent=cls._window_name,
-            )
-            btn_info.id = int(new_id)
-
-    @classmethod
     def remove_button(cls, name: str) -> None:
         btn_info = cls._dict_of_btn.pop(name, None)
         if btn_info is None:
@@ -106,17 +116,3 @@ class MainWindow(BaseWindow):
 
         if name in cls._btn_order:
             cls._btn_order.remove(name)
-
-    @classmethod
-    def rebuild(cls) -> None:
-        if dpg.does_item_exist("version_info_text"):
-            dpg.delete_item("version_info_text")
-
-        dpg.add_text(
-            Localization.get_string("version_info", version=AppConfig.version),
-            tag="version_info_text",
-            parent=cls._window_name,
-        )
-
-        cls.rebuild_buttons()
-        ViewportResizeManager.invoke()
