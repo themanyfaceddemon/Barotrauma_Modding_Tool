@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import dearpygui.dearpygui as dpg
 
 from Code.dpg_tools import ViewportResizeManager
+from Code.loc import Localization as loc
 
 from .base_window import BaseWindow
 
@@ -11,14 +12,13 @@ from .base_window import BaseWindow
 @dataclass
 class _ButtonInfo:
     id: int
+    label: str
     func: Callable
 
 
 class MainWindow(BaseWindow):
     _window_name = "main_window"
-    _btn_order: list[
-        str
-    ] = []  # базово в зависимости от локализации будет разный порядок
+    _btn_order: list[str] = []
     _dict_of_btn: dict[str, _ButtonInfo] = {}
 
     @classmethod
@@ -53,12 +53,12 @@ class MainWindow(BaseWindow):
         ViewportResizeManager.add_callback(cls._window_name, cls._on_window_resize)
 
     @classmethod
-    def add_button(cls, name: str, func: Callable) -> None:
+    def add_button(cls, name: str, label_id: str, func: Callable) -> None:
         if name in cls._dict_of_btn:
             return
 
-        btn_id = dpg.add_button(label=name, callback=func)
-        cls._dict_of_btn[name] = _ButtonInfo(int(btn_id), func)
+        btn_id = dpg.add_button(label=loc.get_string(label_id), callback=func)
+        cls._dict_of_btn[name] = _ButtonInfo(int(btn_id), label_id, func)
         cls._btn_order.append(name)
 
     @classmethod
@@ -68,7 +68,9 @@ class MainWindow(BaseWindow):
 
         for key in cls._btn_order:
             btn_info = cls._dict_of_btn[key]
-            new_id = dpg.add_button(label=key, callback=btn_info.func)
+            new_id = dpg.add_button(
+                label=loc.get_string(btn_info.label), callback=btn_info.func
+            )
             btn_info.id = int(new_id)
 
     @classmethod
