@@ -5,10 +5,10 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Set
 
 from Code.app_config import AppConfig
-from Code.package import InternalModLibrary
 from Code.xml_object import XMLBuilder
 
 from .id_parser import extract_ids
+from .internal_library import InternalModLibrary
 
 logger = logging.getLogger(__name__)
 

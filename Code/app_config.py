@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class AppConfig:
     user_config: Dict[str, Any] = {}
-    version: Final[str] = "0.2.1"
+    version: Final[str] = "0.3.0 beta"
     app_name: Final[str] = "Barotrauma Modding Tool"
     app_github: Final[str] = (
         "https://github.com/themanyfaceddemon/Barotrauma_Modding_Tool"

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 
 from Code.app_config import AppConfig
 
@@ -17,6 +17,7 @@ main-app-name={form-apple} {sex-apple} # комментарий
 
 class Localization:
     _translations: Dict[str, str] = {}
+    _lang_update_function: list[Callable] = []
 
     @classmethod
     def init(cls) -> None:
@@ -165,3 +166,28 @@ class Localization:
     def change_language(cls, new_lang: str) -> None:
         AppConfig.set("lang", new_lang)
         cls.reload_translation(new_lang)
+        cls.noutify()
+
+    @classmethod
+    def get_all_lang_code(cls) -> list[str]:
+        localization_root = AppConfig.get_data_root_path() / "localization"
+        if not localization_root.exists():
+            return []
+
+        return [item.name for item in localization_root.iterdir() if item.is_dir()]
+
+    @classmethod
+    def add_callback(cls, func: Callable) -> None:
+        cls._lang_update_function.append(func)
+
+    @classmethod
+    def remove_callback(cls, func: Callable) -> None:
+        try:
+            cls._lang_update_function.remove(func)
+        except ValueError:
+            pass
+
+    @classmethod
+    def noutify(cls) -> None:
+        for func in cls._lang_update_function:
+            func()

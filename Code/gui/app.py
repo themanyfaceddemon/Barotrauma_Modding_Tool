@@ -7,9 +7,9 @@ import dearpygui.dearpygui as dpg
 
 from Code.app_config import AppConfig
 from Code.dpg_tools import FontManager, ViewportResizeManager
-from Code.gui.windows import MainWindow
+from Code.gui.windows import MainWindow, ModManagerWindow, SettingsWindow
 from Code.handlers import ModManager
-from Code.loc import Localization as loc
+from Code.loc import Localization
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class App:
     _LIST_OF_COMPONENTS: list[Any] = [
         AppConfig,
-        loc,
+        Localization,
         ModManager,
         ViewportResizeManager,
     ]
@@ -73,15 +73,34 @@ class App:
     @classmethod
     def _init_viewport(cls):
         size = AppConfig.get("last_viewport_size", "600 400")
-        width, height = size.split(" ")  # type: ignore
+        if size is None:
+            size = "600 400"
+        width, height = size.split(" ")
         dpg.create_viewport(
-            title=loc.get_string("viewport-name"),
+            title=Localization.get_string("viewport_name"),
             width=int(width),
             min_width=600,
             height=int(height),
             min_height=400,
         )
         dpg.show_viewport()
+
+    @classmethod
+    def _load_img(cls) -> None:
+        with dpg.texture_registry():
+            for lang_code in Localization.get_all_lang_code():
+                width, height, _, data = dpg.load_image(
+                    str(
+                        AppConfig.get_data_root_path()
+                        / f"img/lang_btn_img/{lang_code}.png"
+                    )
+                )
+                dpg.add_static_texture(
+                    width=width,
+                    height=height,
+                    default_value=data,
+                    tag=lang_code + "_btn_img",
+                )
 
     @classmethod
     def run(cls, debug: bool = False) -> None:
@@ -97,23 +116,19 @@ class App:
         FontManager.load_fonts()
 
         cls._init_components()
+        cls._load_img()
         cls._init_viewport()
 
         MainWindow.create()
         MainWindow.add_button(
             "open_mod_manager",
             "open_mod_manager_btn",
-            MainWindow.create,
+            ModManagerWindow.create,
         )
         MainWindow.add_button(
             "open_settings",
             "open_settings_btn",
-            MainWindow.create,
-        )
-        MainWindow.add_button(
-            "open_experimental_settings",
-            "open_experimental_settings_btn",
-            MainWindow.rebuild,
+            SettingsWindow.create,
         )
 
         dpg.start_dearpygui()
