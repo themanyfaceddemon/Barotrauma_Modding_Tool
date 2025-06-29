@@ -12,9 +12,9 @@ from .base_window import BaseWindow
 
 @dataclass
 class _ButtonInfo:
-    id: int
-    label: str
+    label_id: str
     func: Callable
+    enabel_func: Callable[[], bool] | None
 
 
 class MainWindow(BaseWindow):
@@ -36,8 +36,8 @@ class MainWindow(BaseWindow):
 
         to_delete = []
         for key, btn_info in cls._dict_of_btn.items():
-            if dpg.does_item_exist(btn_info.id):
-                dpg.set_item_width(btn_info.id, item_width - 16)
+            if dpg.does_item_exist(btn_info.label_id):
+                dpg.set_item_width(btn_info.label_id, item_width - 16)
             else:
                 to_delete.append(key)
 
@@ -78,32 +78,48 @@ class MainWindow(BaseWindow):
 
         for key in cls._btn_order:
             btn_info = cls._dict_of_btn[key]
-            if dpg.does_item_exist(btn_info.id):
-                dpg.delete_item(btn_info.id)
+            if dpg.does_item_exist(btn_info.label_id):
+                dpg.delete_item(btn_info.label_id)
 
-            new_id = dpg.add_button(
-                label=Localization.get_string(btn_info.label),
+            is_on = True
+            if btn_info.enabel_func is not None:
+                is_on = btn_info.enabel_func()
+
+            dpg.add_button(
+                tag=btn_info.label_id,
+                label=Localization.get_string(btn_info.label_id),
                 callback=btn_info.func,
                 parent=cls._window_name,
+                enabled=is_on,
             )
-            btn_info.id = int(new_id)
         ViewportResizeManager.invoke()
 
     @classmethod
-    def add_button(cls, name: str, label_id: str, func: Callable) -> None:
-        if name in cls._dict_of_btn:
+    def add_button(
+        cls,
+        label_id: str,
+        func: Callable,
+        enabel_func: Callable[[], bool] | None = None,
+    ) -> None:
+        if label_id in cls._dict_of_btn:
             return
 
         if not dpg.does_item_exist(cls._window_name):
             return
 
-        btn_id = dpg.add_button(
+        is_on = True
+        if enabel_func is not None:
+            is_on = enabel_func()
+
+        dpg.add_button(
+            tag=label_id,
             label=Localization.get_string(label_id),
             callback=func,
             parent=cls._window_name,
+            enabled=is_on,
         )
-        cls._dict_of_btn[name] = _ButtonInfo(int(btn_id), label_id, func)
-        cls._btn_order.append(name)
+        cls._dict_of_btn[label_id] = _ButtonInfo(label_id, func, enabel_func)
+        cls._btn_order.append(label_id)
         ViewportResizeManager.invoke()
 
     @classmethod
@@ -112,8 +128,8 @@ class MainWindow(BaseWindow):
         if btn_info is None:
             return
 
-        if dpg.does_item_exist(btn_info.id):
-            dpg.delete_item(btn_info.id)
+        if dpg.does_item_exist(btn_info.label_id):
+            dpg.delete_item(btn_info.label_id)
 
         if name in cls._btn_order:
             cls._btn_order.remove(name)

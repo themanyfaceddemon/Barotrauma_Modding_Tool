@@ -1,1 +1,6 @@
+settings_etc_str = Другие настройки
+settings_game_auto_lua = Включить автоматическую загрузку LUA?
+settings_game_skip_intro = Включить пропуск вступительной заставки?
+settings_game_str = Настройки игры
 settings_lang_str = Настройки языка
+settings_performance_hash = Включить кеш загрузки?

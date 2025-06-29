@@ -17,18 +17,34 @@ class Game:
         "Linux": "Barotrauma",
     }
 
-    @staticmethod
-    def run(install_lua: bool = False, skip_intro: bool = False):
+    @classmethod
+    def run(cls, install_lua: bool = False, skip_intro: bool = False):
         if install_lua:
             Updater.download()
 
         args = ["-skipintro"] if skip_intro else []
-        Game._run_pe(args)
+        cls._run_pe(args)
 
-    @staticmethod
-    def _run_pe(parms: List[str] = []):
+    @classmethod
+    def is_valid_exec(cls) -> bool:
+        exec_file = cls._EXECUTABLES.get(platform.system())
+        if exec_file is None:
+            return False
+
+        game_path = AppConfig.get_game_path()
+        if game_path is None:
+            return False
+
+        executable_path = game_path / exec_file
+        if not executable_path.exists():
+            return False
+
+        return True
+
+    @classmethod
+    def _run_pe(cls, parms: List[str] = []):
         try:
-            exec_file = Game._EXECUTABLES.get(platform.system())
+            exec_file = cls._EXECUTABLES.get(platform.system())
             if exec_file is None:
                 raise RuntimeError("Unknown operating system")
 

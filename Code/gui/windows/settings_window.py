@@ -1,5 +1,6 @@
 import dearpygui.dearpygui as dpg
 
+from Code.app_config import AppConfig
 from Code.dpg_tools import ViewportResizeManager
 from Code.loc import Localization
 
@@ -34,13 +35,13 @@ class SettingsWindow(BaseWindow):
         Localization.change_language(user_data)
 
     @classmethod
-    def _build_btns(cls) -> None:
+    def _build_lang_ch_content(cls, parent) -> None:
         i = 1
-        groop = dpg.add_group(horizontal=True, parent=cls._window_name)
+        groop = dpg.add_group(horizontal=True, parent=parent)
         for lang_code in Localization.get_all_lang_code():
             if i >= 3:
                 i = 1
-                groop = dpg.add_group(horizontal=True, parent=cls._window_name)
+                groop = dpg.add_group(horizontal=True, parent=parent)
 
             dpg.add_image_button(
                 f"{lang_code}_btn_img",
@@ -51,11 +52,69 @@ class SettingsWindow(BaseWindow):
             i += 1
 
     @classmethod
+    def _build_game_ch_content(cls, parent) -> None:
+        with dpg.group(horizontal=True, parent=parent):
+            with dpg.group():
+                dpg.add_text(Localization.get_string("settings_game_auto_lua"))
+                dpg.add_text(Localization.get_string("settings_game_skip_intro"))
+
+            with dpg.group():
+                dpg.add_checkbox(
+                    default_value=AppConfig.get("game_config_auto_lua", False),  # type: ignore
+                    callback=lambda s, a: AppConfig.set("game_config_auto_lua", a),
+                )
+                dpg.add_checkbox(
+                    default_value=AppConfig.get("game_config_skip_intro", False),  # type: ignore
+                    callback=lambda s, a: AppConfig.set("game_config_skip_intro", a),
+                )
+
+    @classmethod
+    def _build_etc_ch_content(cls, parent) -> None:
+        with dpg.group(horizontal=True, parent=parent):
+            with dpg.group():
+                with dpg.group(horizontal=True):
+                    dpg.add_text(Localization.get_string("settings_performance_hash"))
+                    dpg.add_text(Localization.get_string("info_popup"))
+                with dpg.tooltip(dpg.last_container()):
+                    dpg.add_text(
+                        Localization.get_string("settings_performance_hash_info")
+                    )
+
+            with dpg.group():
+                dpg.add_checkbox(
+                    default_value=AppConfig.get("enabel_performance_hash", False),  # type: ignore
+                    callback=lambda s, a: AppConfig.set("enabel_performance_hash", a),
+                )
+
+    @classmethod
     def _build_content(cls) -> None:
-        dpg.add_text(
-            Localization.get_string("settings_lang_str"), parent=cls._window_name
-        )
-        cls._build_btns()
+        with dpg.collapsing_header(
+            label=Localization.get_string("settings_lang_str"),
+            parent=cls._window_name,
+            default_open=True,
+            leaf=True,
+        ) as ch:
+            cls._build_lang_ch_content(ch)
+        dpg.add_separator(parent=cls._window_name)
+
+        ###
+        with dpg.collapsing_header(
+            label=Localization.get_string("settings_game_str"),
+            parent=cls._window_name,
+            default_open=True,
+            leaf=True,
+        ) as ch:
+            cls._build_game_ch_content(ch)
+        dpg.add_separator(parent=cls._window_name)
+
+        ###
+        with dpg.collapsing_header(
+            label=Localization.get_string("settings_etc_str"),
+            parent=cls._window_name,
+            default_open=True,
+            leaf=True,
+        ) as ch:
+            cls._build_etc_ch_content(ch)
         dpg.add_separator(parent=cls._window_name)
 
     @classmethod
