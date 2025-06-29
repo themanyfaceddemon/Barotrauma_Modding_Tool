@@ -95,6 +95,7 @@ class App:
                         / f"img/lang_btn_img/{lang_code}.png"
                     )
                 )
+
                 dpg.add_static_texture(
                     width=width,
                     height=height,

@@ -344,9 +344,8 @@ class ModsTab:
 
     @staticmethod
     def on_mod_dropped(sender, app_data, user_data):
-        drag_data = app_data
-        dragged_mod_id = drag_data["mod_id"]
-        dragged_mod_status = drag_data["status"]
+        dragged_mod_id = app_data["mod_id"]
+        dragged_mod_status = app_data["status"]
 
         sender_type = dpg.get_item_type(sender)
 

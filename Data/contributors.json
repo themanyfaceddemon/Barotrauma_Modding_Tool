@@ -1,32 +1,21 @@
 {
-    "contributors-devs": [
-        {
-            "name": "Cain (discord - cainheretic)",
-            "role": "contributors-dev-thx"
-        },
-        {
-            "name": "Zipliks",
-            "role": "contributors-dev-thx"
-        }
-    ],
-    "contributors-translators": [
-        {
-            "name": "profole",
-            "code": "ger"
-        }
-    ],
-    "contributors-special-thanks": [
-        {
-            "to": "Neurotrauma Fork",
-            "desc": "contributors-discord-thx"
-        },
-        {
-            "to": "Luatrauma",
-            "desc": "contributors-discord-thx"
-        },
-        {
-            "to": "Nebual",
-            "desc": "contributors-nebual-special"
-        }
+    "contributors": {
+        "contributed": [
+            "Cain (discord - cainheretic)",
+            "Zipliks"
+        ],
+        "discord": [
+            "Neurotrauma Fork",
+            "Luatrauma"
+        ],
+        "translate": [
+            [
+                "profole",
+                "ger"
+            ]
+        ]
+    },
+    "special": [
+        "nebual"
     ]
 }

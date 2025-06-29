@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Callable
-from typing import Dict, TypeGuard
+from typing import Dict
 
 import dearpygui.dearpygui as dpg
 
@@ -46,14 +46,10 @@ class ViewportResizeManager:
 
         for key, callback in cls._callback_dict.items():
             try:
-                if cls._is_callback_arg_0(callback):
-                    callback()
+                if callback.__code__.co_argcount == 0:
+                    callback()  # type: ignore
                 else:
                     callback(app_data)  # type: ignore
 
             except Exception as e:
                 logger.error(f"Error in callback '{key}': {e}")
-
-    @staticmethod
-    def _is_callback_arg_0(callback: Callable) -> TypeGuard[Callable[[], None]]:
-        return callback.__code__.co_argcount == 0
