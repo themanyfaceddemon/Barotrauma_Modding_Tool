@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Set
 
 from Code.app_config import AppConfig
+from Code.package import InternalModLibrary
 from Code.xml_object import XMLBuilder
 
 from .id_parser import extract_ids
@@ -286,18 +287,10 @@ class ModUnit(Identifier):
         metadata_path = path / "metadata.xml"
 
         if not metadata_path.exists():
-            search_pattern = f"{obj.id}.xml"
-            found_files = list(
-                (AppConfig.get_data_root_path() / "InternalLibrary").rglob(
-                    search_pattern
-                )
-            )
+            if InternalModLibrary.has_mod(obj.id):
+                ModUnit._parse_metadata_viva_internal_mod_library(obj)
 
-            if found_files:
-                metadata_path = found_files[0]
-
-            else:
-                return
+            return
 
         xml_obj = XMLBuilder.load(metadata_path)
         if xml_obj is None:
@@ -361,29 +354,69 @@ class ModUnit(Identifier):
 
                 obj.metadata.dependencies.extend(dependencies)
 
+    @staticmethod
+    def _parse_metadata_viva_internal_mod_library(obj: "ModUnit") -> None:
+        settings = InternalModLibrary.get_mod_settings(obj.id)
+        meta = InternalModLibrary.get_mod_meta(obj.id)
+        deps = InternalModLibrary.get_mod_dependencies(obj.id)
+
+        if settings:
+            obj.settings.update(settings)
+
+        if meta:
+            if author := meta.get("author"):
+                obj.metadata.author_name = author
+            if license_ := meta.get("license"):
+                obj.metadata.license = license_
+
+            if warning_str := meta.get("warning"):
+                obj.metadata.warnings.extend(warning_str.strip().splitlines())
+            if error_str := meta.get("error"):
+                obj.metadata.errors.extend(error_str.strip().splitlines())
+
+        if deps:
+            for dep_type, items in deps.items():
+                if not Dependencie.is_valid_type(dep_type):
+                    logger.warning(
+                        f"Ignoring unsupported dependency type '{dep_type}' in DB for mod {obj.id}"
+                    )
+                    continue
+
+                for item in items:
+                    name = item.get("name", "")
+                    steam_id = item.get("steamID")
+                    condition = item.get("condition")
+
+                    attrs = {
+                        k: v
+                        for k, v in item.items()
+                        if k not in ("name", "steamID", "condition")
+                    }
+
+                    dependency = Dependencie(
+                        name=name,
+                        steam_id=steam_id,
+                        type=dep_type,  # type: ignore
+                        attributes=attrs,
+                        condition=condition,
+                    )
+                    obj.metadata.dependencies.append(dependency)
+
     def update_meta_errors(self) -> None:
         metadata_path = self.path / "metadata.xml"
 
-        self.metadata.errors.clear()
-        self.metadata.warnings.clear()
-
         if not metadata_path.exists():
-            search_pattern = f"{self.id}.xml"
-            found_files = list(
-                (AppConfig.get_data_root_path() / "InternalLibrary").rglob(
-                    search_pattern
-                )
-            )
+            if InternalModLibrary.has_mod(self.id):
+                self._update_meta_errors_viva_internal_mod_library()
 
-            if found_files:
-                metadata_path = found_files[0]
-
-            else:
-                return
+            return
 
         xml_obj = XMLBuilder.load(metadata_path)
         if xml_obj is None:
             raise ValueError(f"Empty metadata.xml for {self.id}!")
+
+        self.metadata.errors.clear()
+        self.metadata.warnings.clear()
 
         for element in xml_obj.find_only_elements("meta"):
             for ch in element.iter_non_comment_childrens():
@@ -393,3 +426,17 @@ class ModUnit(Identifier):
 
                 elif ch_name_lower == "error":
                     self.metadata.errors.extend(ch.content.strip().splitlines())
+
+    def _update_meta_errors_viva_internal_mod_library(self) -> None:
+        meta = InternalModLibrary.get_mod_meta(self.id)
+        if not meta:
+            return
+
+        self.metadata.errors.clear()
+        self.metadata.warnings.clear()
+
+        if "warning" in meta:
+            self.metadata.warnings.extend(meta["warning"].strip().splitlines())
+
+        if "error" in meta:
+            self.metadata.errors.extend(meta["error"].strip().splitlines())
