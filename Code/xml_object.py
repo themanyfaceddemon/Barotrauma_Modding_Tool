@@ -82,8 +82,8 @@ class XMLElement(XMLBaseStruct):
 
     def __repr__(self):
         return (
-            f"XMLElement(name={repr(self.tag)}, attributes={self.attributes}, "
-            f"children={self.childrens}, content={repr(self.content)})"
+            f"XMLElement(tag={repr(self.tag)}, attributes={self.attributes}, "
+            f"childrens={self.childrens}, content={repr(self.content)})"
         )
 
     def replace(self, index: int, new_child: Union[XMLComment, "XMLElement"]) -> bool:
