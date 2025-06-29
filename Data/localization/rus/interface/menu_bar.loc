@@ -1,9 +1,0 @@
-cur-version-latest = Последняя версия?
-error-game-dir-not-set = Путь к игре не установлен!
-error-unknown-os = Неизвестная операционная система
-menu-bar-settings-lable = Настройки
-menu-bar-start-game = Запустить игру
-menu-language = Язык
-menu-toggle-experimental = Переключить эксперементальный режим
-setting-toggle-install-lua = Включить авто установку lua
-setting-toggle-skip-intro = Включить пропуск интро

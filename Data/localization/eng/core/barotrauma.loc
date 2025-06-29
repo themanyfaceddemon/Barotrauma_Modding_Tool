@@ -1,9 +1,0 @@
-hint-enter-barotrauma-path = Enter the game path
-label-barotrauma-path-settings = Game Path Settings
-label-current-path = Current path:
-label-not-defined = Not defined
-label-valid-path = Is the path valid?
-search-exp-game = Searching...
-search-exp-game-done = Select the path to your Barotrauma game:
-search-exp-game-none = Sorry, nothing found.
-warning-exp-game-1 = Search will start after your confirmation

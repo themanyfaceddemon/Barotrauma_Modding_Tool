@@ -17,6 +17,20 @@
             "request": "launch",
             "program": "main.py",
             "console": "integratedTerminal",
+        },
+        {
+            "name": "Get missing loc keys",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "Data/localization/get_missing_loc_keys.py",
+            "console": "integratedTerminal",
+        },
+        {
+            "name": "Normalize loc file",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "Data/localization/normalize_loc_file.py",
+            "console": "integratedTerminal",
         }
     ]
 }
