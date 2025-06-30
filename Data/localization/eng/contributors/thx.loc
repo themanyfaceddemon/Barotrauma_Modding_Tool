@@ -1,0 +1,3 @@
+contributors_thx_contributed = Thanks to {user} for contributing to the project!
+contributors_thx_discord = Thanks to the Discord community '{server_name}' for their help, bug feedback, and suggestions for improvement!
+contributors_thx_translate = Thanks to {user} for localizing '{lang_code}'!
