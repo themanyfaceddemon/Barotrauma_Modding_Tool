@@ -2,7 +2,6 @@ import argparse
 import logging
 import os
 import platform
-import re
 
 from colorama import Fore, Style, init
 
@@ -40,14 +39,6 @@ def configure_logging(debug: bool):
         handlers=[console_handler],
         encoding="utf-8",
     )
-
-
-def check_path_for_non_ascii():
-    script_path = os.path.abspath(__file__)
-    if re.search(r"[^\x00-\x7F]", script_path):
-        raise RuntimeError(
-            f"The program installation path contains non-ASCII characters.\n\nCurrent path: {script_path}"
-        )
 
 
 def args_no_gui(
@@ -119,7 +110,6 @@ if __name__ == "__main__":
         configure_logging(args.debug)
 
         if platform.system() == "Windows":
-            check_path_for_non_ascii()  # Basically, DPG's ass only falls off when we are on Windows and we have non-ascii symbols. That's why we don't allow it to twitch if we have non-ascii symbols on Windows.
             os.environ["PYTHONIOENCODING"] = "utf-8"
             os.environ["PYTHONUTF8"] = "1"
 
