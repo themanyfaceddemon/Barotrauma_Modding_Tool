@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 
@@ -56,11 +57,18 @@ def generate_report(comparison_result):
         if missing_languages:
             report.append(f"Key '{key}' is missing in: {', '.join(missing_languages)}")
 
-    return "\n".join(report)
+    return report
 
 
 input_directory = "Data/localization"
 comparison_result = compare_keys_between_languages(input_directory)
 report = generate_report(comparison_result)
-print("Report:")
-print(report)
+
+if report:
+    print("Missing keys found:")
+    for line in report:
+        print(line)
+
+    sys.exit(1)
+
+print("All keys are present across all languages.")

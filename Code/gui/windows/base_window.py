@@ -19,7 +19,7 @@ class BaseWindow:
 
     @classmethod
     def _update_for_lang(cls) -> None:
-        cls.rebuild()
+        pass
 
     @classmethod
     def create(cls) -> None:
