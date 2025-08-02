@@ -1,7 +1,6 @@
 import dearpygui.dearpygui as dpg
 
 from Code.app_config import AppConfig
-from Code.dpg_tools import ViewportResizeManager
 from Code.loc import Localization
 
 from .base_window import BaseWindow
@@ -134,5 +133,4 @@ class SettingsWindow(BaseWindow):
         ):
             cls._build_content()
 
-        ViewportResizeManager.add_callback(cls._window_name, cls._on_window_resize)
-        Localization.add_callback(cls._update_for_lang)
+        super().create()

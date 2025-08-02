@@ -1,6 +1,5 @@
 import dearpygui.dearpygui as dpg
 
-from Code.dpg_tools import ViewportResizeManager
 from Code.loc import Localization
 
 from .base_window import BaseWindow
@@ -35,12 +34,8 @@ class ModManagerWindow(BaseWindow):
         ):
             pass
 
-        ViewportResizeManager.add_callback(cls._window_name, cls._on_window_resize)
+        super().create()
 
     @classmethod
     def rebuild(cls) -> None:
         pass
-
-
-
-

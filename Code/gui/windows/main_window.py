@@ -62,8 +62,7 @@ class MainWindow(BaseWindow):
                 tag="version_info_text",
             )
 
-        ViewportResizeManager.add_callback(cls._window_name, cls._on_window_resize)
-        Localization.add_callback(cls._update_for_lang)
+        super().create()
 
     @classmethod
     def rebuild(cls) -> None:
