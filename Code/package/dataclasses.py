@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional, Set
 
 from Code.app_config import AppConfig
+from Code.handlers.mod_cache import ModCache
 from Code.xml_object import XMLBuilder
 
 from .id_parser import extract_ids
@@ -189,12 +190,33 @@ class ModUnit(Identifier):
         try:
             path = Path(path)
 
+            mod_hash = ModCache.calculate_mod_hash(path)
+
+            filelist_path = path / "filelist.xml"
+            if filelist_path.exists():
+                filelist = XMLBuilder.load(filelist_path)
+                if filelist:
+                    mod_name = filelist.attributes.get("name")
+                    if mod_name and mod_name != "Something went rong":
+                        cached_data = ModCache.load_cached_mod(mod_name, mod_hash)
+                        if cached_data:
+                            obj = ModUnit.create_empty()
+                            for key, value in cached_data.items():
+                                setattr(obj, key, value)
+                            obj.path = path
+                            return obj
+
             obj = ModUnit.create_empty()
 
             if "LocalMods" in path.parts:
                 obj.local = True
 
             ModUnit.parse_filelist(obj, path)
+
+            if not obj.corepackage and obj.name != "base-not-set":
+                cache_data = {k: v for k, v in obj.__dict__.items() if k != "path"}
+                ModCache.save_mod_cache(obj.name, mod_hash, cache_data)
+
             if obj.corepackage:
                 logging.warning(
                     f"The program does not support core packages!\n|Mod details: '{obj.name}' | Steam ID: '{obj.steam_id}'"
@@ -202,13 +224,8 @@ class ModUnit(Identifier):
                 return None
 
             obj.path = path
-            obj.use_lua = ModUnit.has_file(path, ".[Ll][Uu][Aa]")
-            obj.use_cs = any(
-                [
-                    ModUnit.has_file(path, ".[Cc][Ss]"),
-                    ModUnit.has_file(path, ".[Dd][Ll][Ll]"),
-                ]
-            )
+            obj.use_lua = ModUnit.has_file(path, ".lua")
+            obj.use_cs = ModUnit.has_file(path, ".cs") or ModUnit.has_file(path, ".dll")
 
             ModUnit.parse_files(obj, path)
             ModUnit.parse_metadata(obj, path)
@@ -220,10 +237,7 @@ class ModUnit(Identifier):
 
     @staticmethod
     def has_file(path: Path, extension: str) -> bool:
-        for file in path.rglob(f"*{extension}"):
-            return True
-
-        return False
+        return next(path.rglob(f"*{extension}"), None) is not None
 
     @staticmethod
     def parse_filelist(obj: "ModUnit", path: Path) -> None:
@@ -250,7 +264,7 @@ class ModUnit(Identifier):
 
     @staticmethod
     def parse_files(obj: "ModUnit", path: Path) -> None:
-        xml_files_paths = path.rglob("*.[Xx][Mm][Ll]")
+        xml_files_paths = path.rglob("*.xml")
 
         with ThreadPoolExecutor() as executor:
             for xml_file_path in xml_files_paths:

@@ -66,9 +66,12 @@ class AppConfig:
             try:
                 with open(config_path, "r", encoding="utf-8") as file:
                     cls.user_config = json.load(file)
-
             except json.JSONDecodeError as err:
                 logger.error(f"Error while decoding user_config.json: {err}")
+                cls.user_config = {}
+
+        else:
+            cls.user_config = {}
 
     @classmethod
     def _save_user_config(cls) -> None:

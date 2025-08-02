@@ -11,6 +11,7 @@ from Code.package.dataclasses import ModUnit
 from Code.xml_object import XMLBuilder, XMLComment, XMLElement
 
 from .condition_manager import process_condition
+from .mod_cache import ModCache
 from .parts_manager import PartsManager
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class ModManager:
 
     @staticmethod
     def init():
+        ModCache.initialize()
         ModManager.load_mods()
         ModManager.load_cslua_config()
         atexit.register(ModManager._on_exit)
