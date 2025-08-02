@@ -1,4 +1,4 @@
-name: Test Missing Localization Keys
+name: Test Missing .loc Keys
 
 on:
   pull_request:
@@ -18,5 +18,5 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run localization consistency check
+      - name: Run python
         run: python Data/localization/get_missing_loc_keys.py
