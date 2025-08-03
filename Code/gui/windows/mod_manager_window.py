@@ -11,6 +11,7 @@ from .base_window import BaseWindow
 
 class ModManagerWindow(BaseWindow):
     _window_name = "mod_manager_window"
+    _btn_selected = set()
 
     @classmethod
     def _update_for_lang(cls) -> None:
@@ -55,6 +56,83 @@ class ModManagerWindow(BaseWindow):
                     cls._buld_mod_unit(tag, mod)
 
     @classmethod
+    def _btn_drag(cls, sender, app_data, user_data) -> None:
+        children = dpg.get_item_children(sender, 1)
+        for child in children or []:
+            print(dpg.get_item_type(child))
+            if dpg.get_item_type(child) == dpg.mvDragPayload:
+                dpg.delete_item(child)
+
+        # Готовим новые данные
+        selected_mods = []
+        if cls._btn_selected:
+            for item_id in cls._btn_selected:
+                mod = dpg.get_item_user_data(item_id)
+                if mod:
+                    selected_mods.append(mod)
+        else:
+            selected_mods = [user_data]
+
+        with dpg.drag_payload(
+            parent=sender,
+            payload_type="MOD",
+            drag_data=selected_mods,
+        ):
+            for mod in selected_mods:
+                dpg.add_text(mod.name)
+
+        dpg.bind_item_theme(sender, "btn_selected")
+
+    @classmethod
+    def _btn_drop(cls, sender, app_data, user_data) -> None:
+        if isinstance(app_data, (list, set, tuple)):
+            mods = set(app_data)
+        else:
+            mods = {app_data}
+
+        for mod in mods:
+            if not hasattr(mod, "metadata"):
+                mod = dpg.get_item_user_data(mod)
+
+            assert mod is not None
+
+            if mod.metadata.errors:
+                dpg.bind_item_theme(mod.id, "btn_error")
+            elif mod.metadata.warnings:
+                dpg.bind_item_theme(mod.id, "btn_warning")
+            else:
+                dpg.bind_item_theme(mod.id, "")
+
+        cls._btn_selected.clear()
+
+    @classmethod
+    def _btn_on_click(cls, sender, app_data, user_data) -> None:
+        if user_data is None:
+            return
+
+        if any(
+            [
+                dpg.is_key_down(dpg.mvKey_LShift),
+                dpg.is_key_down(dpg.mvKey_RShift),
+                dpg.is_key_down(dpg.mvKey_LControl),
+                dpg.is_key_down(dpg.mvKey_RControl),
+            ]
+        ):
+            if sender in cls._btn_selected:
+                cls._btn_selected.remove(sender)
+
+                if user_data.metadata.errors:
+                    dpg.bind_item_theme(sender, "btn_error")
+                elif user_data.metadata.warnings:
+                    dpg.bind_item_theme(sender, "btn_warning")
+                else:
+                    dpg.bind_item_theme(sender, "")
+
+            else:
+                cls._btn_selected.add(sender)
+                dpg.bind_item_theme(sender, "btn_selected")
+
+    @classmethod
     def _buld_mod_unit(
         cls,
         parent: Literal["active", "inactive"],
@@ -66,7 +144,22 @@ class ModManagerWindow(BaseWindow):
             parent=f"mod_fild_{parent}",
             user_data=mod,
             payload_type="MOD",
+            drag_callback=cls._btn_drag,
+            callback=cls._btn_on_click,
         )
+
+        if mod.metadata.errors:
+            dpg.bind_item_theme(mod.id, "btn_error")
+
+        elif mod.metadata.warnings:
+            dpg.bind_item_theme(mod.id, "btn_warning")
+
+        with dpg.drag_payload(
+            parent=mod.id,
+            payload_type="MOD",
+            drag_data=[mod],
+        ):
+            dpg.add_text(mod.name)
 
     @classmethod
     def _on_search(cls, sender, app_data, user_data) -> None:
@@ -111,7 +204,12 @@ class ModManagerWindow(BaseWindow):
                             user_data=tag,
                             callback=cls._on_search,
                         )
-                        dpg.add_child_window(tag=f"mod_fild_{tag}", no_scrollbar=True)
+                        dpg.add_child_window(
+                            tag=f"mod_fild_{tag}",
+                            no_scrollbar=True,
+                            payload_type="MOD",
+                            drop_callback=cls._btn_drop,
+                        )
 
         cls._rebuild_mod_units()
 

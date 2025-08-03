@@ -6,7 +6,7 @@ from typing import Any
 import dearpygui.dearpygui as dpg
 
 from Code.app_config import AppConfig
-from Code.dpg_tools import FontManager, ViewportResizeManager
+from Code.dpg_tools import FontManager, ThemesManager, ViewportResizeManager
 from Code.game import Game
 from Code.gui.windows import MainWindow, ModManagerWindow, SettingsWindow
 from Code.handlers import ModManager
@@ -20,6 +20,7 @@ class App:
         AppConfig,
         Localization,
         ModManager,
+        ThemesManager,
         ViewportResizeManager,
     ]
     _DEBUG: bool = False
@@ -104,17 +105,6 @@ class App:
                 )
 
     @classmethod
-    def _init_themes(cls) -> None:
-        with dpg.theme() as main:
-            with dpg.theme_component(dpg.mvButton, enabled_state=False):
-                dpg.add_theme_color(dpg.mvThemeCol_Text, [170, 170, 170])
-                dpg.add_theme_color(dpg.mvThemeCol_Button, [51, 51, 55])
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonHovered, [51, 51, 55])
-                dpg.add_theme_color(dpg.mvThemeCol_ButtonActive, [51, 51, 55])
-
-        dpg.bind_theme(main)
-
-    @classmethod
     def run(cls, debug: bool = False) -> None:
         logger.info("Starting GUI program...")
 
@@ -130,7 +120,6 @@ class App:
         cls._init_components()
         cls._load_img()
         cls._init_viewport()
-        cls._init_themes()
 
         MainWindow.create()
         MainWindow.add_button(

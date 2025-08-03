@@ -2,16 +2,19 @@ import hashlib
 import logging
 import pickle
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING, Any
 
 from Code.app_config import AppConfig
+
+if TYPE_CHECKING:
+    from Code.package.dataclasses import ModUnit
 
 logger = logging.getLogger(__name__)
 
 
 class ModCache:
     _cache_dir: Path = AppConfig._data_root / ".cache"
-    _cache: Dict[str, Dict[str, Any]] = {}
+    _cache: dict[str, Any] = {}
 
     @classmethod
     def initialize(cls):
@@ -49,7 +52,7 @@ class ModCache:
         cls,
         mod_id: str,
         current_hash: str,
-    ) -> Optional[Dict[str, Any]]:
+    ) -> Any | None:
         if not AppConfig.get("enable_performance_hash", False):
             return None
 
@@ -64,7 +67,7 @@ class ModCache:
             if cached_data.get("hash") == current_hash:
                 logger.debug(f"Cache hit for mod {mod_id}")
                 return cached_data.get("data")
-            
+
             else:
                 logger.debug(f"Cache miss for mod {mod_id} (hash mismatch)")
                 return None
@@ -74,16 +77,16 @@ class ModCache:
             return None
 
     @classmethod
-    def save_mod_cache(cls, mod_id: str, mod_hash: str, data: Dict[str, Any]):
+    def save_mod_cache(cls, mod_id: str, mod_hash: str, mod_unit: "ModUnit"):
         if not AppConfig.get("enable_performance_hash", False):
             return
 
         cache_path = cls.get_cache_path(mod_id)
         try:
-            cache_data = {"hash": mod_hash, "data": data}
+            cache_data = {"hash": mod_hash, "data": mod_unit}
             with open(cache_path, "wb") as f:
                 pickle.dump(cache_data, f)
-            
+
             logger.debug(f"Cached mod {mod_id}")
 
         except Exception as e:

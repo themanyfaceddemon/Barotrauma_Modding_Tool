@@ -23,6 +23,10 @@ class MainWindow(BaseWindow):
     _dict_of_btn: dict[str, _ButtonInfo] = {}
 
     @classmethod
+    def _update_for_lang(cls) -> None:
+        cls.rebuild()
+
+    @classmethod
     def _on_window_resize(cls, app_data: tuple[int, int, int, int]) -> None:
         if not dpg.does_item_exist(cls._window_name):
             return

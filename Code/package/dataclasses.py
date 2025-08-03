@@ -143,6 +143,21 @@ class ModUnit(Identifier):
     add_id: Set[str]
     override_id: Set[str]
 
+    def __hash__(self) -> int:
+        return hash(self.id)
+
+    def __eq__(self, other):
+        return isinstance(other, ModUnit) and self.id == other.id
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state["path"] = str(self.path) if self.path else None
+        return state
+
+    def __setstate__(self, state):
+        state["path"] = Path(state["path"]) if state["path"] else None
+        self.__dict__.update(state)
+
     @staticmethod
     def create_empty() -> "ModUnit":
         return ModUnit(
@@ -198,13 +213,10 @@ class ModUnit(Identifier):
                 if filelist:
                     mod_name = filelist.attributes.get("name")
                     if mod_name and mod_name != "Something went rong":
-                        cached_data = ModCache.load_cached_mod(mod_name, mod_hash)
-                        if cached_data:
-                            obj = ModUnit.create_empty()
-                            for key, value in cached_data.items():
-                                setattr(obj, key, value)
-                            obj.path = path
-                            return obj
+                        cached_mod = ModCache.load_cached_mod(mod_name, mod_hash)
+                        if cached_mod:
+                            cached_mod.path = path
+                            return cached_mod
 
             obj = ModUnit.create_empty()
 
@@ -212,10 +224,6 @@ class ModUnit(Identifier):
                 obj.local = True
 
             ModUnit.parse_filelist(obj, path)
-
-            if not obj.corepackage and obj.name != "base-not-set":
-                cache_data = {k: v for k, v in obj.__dict__.items() if k != "path"}
-                ModCache.save_mod_cache(obj.name, mod_hash, cache_data)
 
             if obj.corepackage:
                 logging.warning(
@@ -229,6 +237,9 @@ class ModUnit(Identifier):
 
             ModUnit.parse_files(obj, path)
             ModUnit.parse_metadata(obj, path)
+
+            if obj.name != "base-not-set":
+                ModCache.save_mod_cache(obj.name, mod_hash, obj)
 
             return obj
 
