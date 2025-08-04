@@ -11,50 +11,53 @@ jobs:
           - os: ubuntu-latest
             arch: x64
             build-name: linux-64bit
+            zip-command: zip -r linux-64bit.zip dist/main/*
           - os: ubuntu-latest
             arch: x86
             build-name: linux-32bit
+            zip-command: zip -r linux-32bit.zip dist/main/*
           - os: ubuntu-latest
             arch: arm64
             build-name: linux-arm64
+            zip-command: zip -r linux-arm64.zip dist/main/*
           - os: windows-latest
             arch: x64
             build-name: windows-64bit
+            zip-command: powershell -Command "Compress-Archive -Path 'dist/main/*' -DestinationPath 'windows-64bit.zip'"
           - os: windows-latest
             arch: x86
             build-name: windows-32bit
+            zip-command: powershell -Command "Compress-Archive -Path 'dist/main/*' -DestinationPath 'windows-32bit.zip'"
           - os: windows-latest
             arch: arm64
             build-name: windows-arm64
+            zip-command: powershell -Command "Compress-Archive -Path 'dist/main/*' -DestinationPath 'windows-arm64.zip'"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
-      - name: Install PyInstaller and dependencies
+      - name: Install dependencies
         run: |
           pip install pyinstaller
           pip install -r requirements.txt
-  
+
       - name: Build with PyInstaller
-        run: |
-          pyinstaller main.py --add-data=Data:Data
-        working-directory: ./
+        run: pyinstaller main.py --add-data=Data:Data
 
-      - name: Create ZIP archive (Linux)
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          zip -r ${{ matrix.build-name }}.zip dist/main/*
-
-      - name: Create ZIP archive (Windows)
-        if: startsWith(matrix.os, 'windows')
-        run: |
-          powershell -Command "Compress-Archive -Path dist/main/* -DestinationPath ${{ matrix.build-name }}.zip"
+      - name: Create ZIP archive
+        run: ${{ matrix.zip-command }}
 
       - name: Upload ZIP artifact
         uses: actions/upload-artifact@v4
@@ -71,17 +74,14 @@ jobs:
         with:
           path: allzips
 
-      - name: Flatten artifact structure
+      - name: Move all ZIPs to one folder
         run: |
-          find allzips -name "*.zip" -exec mv {} ./ \;
+          mkdir zips
+          find allzips -name "*.zip" -exec mv {} zips/ \;
           rm -rf allzips
 
-      - name: Create combined ZIP archive
-        run: |
-          zip -r all-builds.zip *.zip
-
-      - name: Upload combined ZIP archive
+      - name: Upload all ZIPs as one artifact
         uses: actions/upload-artifact@v4
         with:
           name: all-builds
-          path: all-builds.zip
+          path: zips/

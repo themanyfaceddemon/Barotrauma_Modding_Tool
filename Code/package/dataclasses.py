@@ -2,12 +2,14 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Set
+from typing import Any, Literal
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
+from Code.handlers.mod_cache import ModCache
 from Code.xml_object import XMLBuilder
 
 from .id_parser import extract_ids
+from .internal_library import InternalModLibrary
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,7 @@ class SkipLoadBuild(Exception):
 @dataclass
 class Identifier:
     name: str
-    steam_id: Optional[str]
+    steam_id: str | None
 
     @property
     def id(self) -> str:
@@ -46,8 +48,8 @@ class Identifier:
 @dataclass
 class Dependencie(Identifier):
     type: Literal["patch", "requirement", "requiredAnyOrder", "conflict"]
-    attributes: Dict[str, str]
-    condition: Optional[str] = None
+    attributes: dict[str, str]
+    condition: str | None = None
 
     def __str__(self) -> str:
         additional_attributes = ", ".join(
@@ -83,10 +85,10 @@ class Metadata:
     author_name: str
     license: str
 
-    warnings: List[str]
-    errors: List[str]
+    warnings: list[str]
+    errors: list[str]
 
-    dependencies: List[Dependencie]
+    dependencies: list[Dependencie]
 
     @staticmethod
     def create_empty() -> "Metadata":
@@ -128,7 +130,7 @@ class ModUnit(Identifier):
 
     has_toggle_content: bool
 
-    load_order: Optional[int]
+    load_order: int
     path: Path
 
     metadata: Metadata
@@ -136,10 +138,25 @@ class ModUnit(Identifier):
     use_lua: bool
     use_cs: bool
 
-    settings: Dict[str, Any]
+    settings: dict[str, Any]
 
-    add_id: Set[str]
-    override_id: Set[str]
+    add_id: set[str]
+    override_id: set[str]
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
+    def __eq__(self, other):
+        return isinstance(other, ModUnit) and self.id == other.id
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state["path"] = str(self.path) if self.path else None
+        return state
+
+    def __setstate__(self, state):
+        state["path"] = Path(state["path"]) if state["path"] else None
+        self.__dict__.update(state)
 
     @staticmethod
     def create_empty() -> "ModUnit":
@@ -149,7 +166,7 @@ class ModUnit(Identifier):
             False,
             False,
             False,
-            None,
+            -1,
             Path(),
             Metadata.create_empty(),
             False,
@@ -166,7 +183,7 @@ class ModUnit(Identifier):
         else:
             return f"LocalMods/{self.path.parts[-1]}"
 
-    def get_bool_settigs(self, key: str) -> Optional[bool]:
+    def get_bool_settigs(self, key: str) -> bool | None:
         if key not in self.settings:
             return None
 
@@ -184,9 +201,22 @@ class ModUnit(Identifier):
         return False
 
     @staticmethod
-    def build(path: (Path | str)) -> Optional["ModUnit"]:
+    def build(path: (Path | str)) -> "ModUnit | None":
         try:
             path = Path(path)
+
+            mod_hash = ModCache.calculate_mod_hash(path)
+
+            filelist_path = path / "filelist.xml"
+            if filelist_path.exists():
+                filelist = XMLBuilder.load(filelist_path)
+                if filelist:
+                    mod_name = filelist.attributes.get("name")
+                    if mod_name and mod_name != "Something went rong":
+                        cached_mod = ModCache.load_cached_mod(mod_name, mod_hash)
+                        if cached_mod:
+                            cached_mod.path = path
+                            return cached_mod
 
             obj = ModUnit.create_empty()
 
@@ -194,6 +224,7 @@ class ModUnit(Identifier):
                 obj.local = True
 
             ModUnit.parse_filelist(obj, path)
+
             if obj.corepackage:
                 logging.warning(
                     f"The program does not support core packages!\n|Mod details: '{obj.name}' | Steam ID: '{obj.steam_id}'"
@@ -201,16 +232,14 @@ class ModUnit(Identifier):
                 return None
 
             obj.path = path
-            obj.use_lua = ModUnit.has_file(path, ".[Ll][Uu][Aa]")
-            obj.use_cs = any(
-                [
-                    ModUnit.has_file(path, ".[Cc][Ss]"),
-                    ModUnit.has_file(path, ".[Dd][Ll][Ll]"),
-                ]
-            )
+            obj.use_lua = ModUnit.has_file(path, ".lua")
+            obj.use_cs = ModUnit.has_file(path, ".cs") or ModUnit.has_file(path, ".dll")
 
             ModUnit.parse_files(obj, path)
             ModUnit.parse_metadata(obj, path)
+
+            if obj.name != "base-not-set":
+                ModCache.save_mod_cache(obj.name, mod_hash, obj)
 
             return obj
 
@@ -219,10 +248,7 @@ class ModUnit(Identifier):
 
     @staticmethod
     def has_file(path: Path, extension: str) -> bool:
-        for file in path.rglob(f"*{extension}"):
-            return True
-
-        return False
+        return next(path.rglob(f"*{extension}"), None) is not None
 
     @staticmethod
     def parse_filelist(obj: "ModUnit", path: Path) -> None:
@@ -249,7 +275,7 @@ class ModUnit(Identifier):
 
     @staticmethod
     def parse_files(obj: "ModUnit", path: Path) -> None:
-        xml_files_paths = path.rglob("*.[Xx][Mm][Ll]")
+        xml_files_paths = path.rglob("*.xml")
 
         with ThreadPoolExecutor() as executor:
             for xml_file_path in xml_files_paths:
@@ -286,18 +312,10 @@ class ModUnit(Identifier):
         metadata_path = path / "metadata.xml"
 
         if not metadata_path.exists():
-            search_pattern = f"{obj.id}.xml"
-            found_files = list(
-                (AppConfig.get_data_root_path() / "InternalLibrary").rglob(
-                    search_pattern
-                )
-            )
+            if InternalModLibrary.has_mod(obj.id):
+                ModUnit._parse_metadata_viva_internal_mod_library(obj)
 
-            if found_files:
-                metadata_path = found_files[0]
-
-            else:
-                return
+            return
 
         xml_obj = XMLBuilder.load(metadata_path)
         if xml_obj is None:
@@ -361,29 +379,69 @@ class ModUnit(Identifier):
 
                 obj.metadata.dependencies.extend(dependencies)
 
+    @staticmethod
+    def _parse_metadata_viva_internal_mod_library(obj: "ModUnit") -> None:
+        settings = InternalModLibrary.get_mod_settings(obj.id)
+        meta = InternalModLibrary.get_mod_meta(obj.id)
+        deps = InternalModLibrary.get_mod_dependencies(obj.id)
+
+        if settings:
+            obj.settings.update(settings)
+
+        if meta:
+            if author := meta.get("author"):
+                obj.metadata.author_name = author
+            if license_ := meta.get("license"):
+                obj.metadata.license = license_
+
+            if warning_str := meta.get("warning"):
+                obj.metadata.warnings.extend(warning_str.strip().splitlines())
+            if error_str := meta.get("error"):
+                obj.metadata.errors.extend(error_str.strip().splitlines())
+
+        if deps:
+            for dep_type, items in deps.items():
+                if not Dependencie.is_valid_type(dep_type):
+                    logger.warning(
+                        f"Ignoring unsupported dependency type '{dep_type}' in DB for mod {obj.id}"
+                    )
+                    continue
+
+                for item in items:
+                    name = item.get("name", "")
+                    steam_id = item.get("steamID")
+                    condition = item.get("condition")
+
+                    attrs = {
+                        k: v
+                        for k, v in item.items()
+                        if k not in ("name", "steamID", "condition")
+                    }
+
+                    dependency = Dependencie(
+                        name=name,
+                        steam_id=steam_id,
+                        type=dep_type,  # type: ignore
+                        attributes=attrs,
+                        condition=condition,
+                    )
+                    obj.metadata.dependencies.append(dependency)
+
     def update_meta_errors(self) -> None:
         metadata_path = self.path / "metadata.xml"
 
-        self.metadata.errors.clear()
-        self.metadata.warnings.clear()
-
         if not metadata_path.exists():
-            search_pattern = f"{self.id}.xml"
-            found_files = list(
-                (AppConfig.get_data_root_path() / "InternalLibrary").rglob(
-                    search_pattern
-                )
-            )
+            if InternalModLibrary.has_mod(self.id):
+                self._update_meta_errors_viva_internal_mod_library()
 
-            if found_files:
-                metadata_path = found_files[0]
-
-            else:
-                return
+            return
 
         xml_obj = XMLBuilder.load(metadata_path)
         if xml_obj is None:
             raise ValueError(f"Empty metadata.xml for {self.id}!")
+
+        self.metadata.errors.clear()
+        self.metadata.warnings.clear()
 
         for element in xml_obj.find_only_elements("meta"):
             for ch in element.iter_non_comment_childrens():
@@ -393,3 +451,17 @@ class ModUnit(Identifier):
 
                 elif ch_name_lower == "error":
                     self.metadata.errors.extend(ch.content.strip().splitlines())
+
+    def _update_meta_errors_viva_internal_mod_library(self) -> None:
+        meta = InternalModLibrary.get_mod_meta(self.id)
+        if not meta:
+            return
+
+        self.metadata.errors.clear()
+        self.metadata.warnings.clear()
+
+        if "warning" in meta:
+            self.metadata.warnings.extend(meta["warning"].strip().splitlines())
+
+        if "error" in meta:
+            self.metadata.errors.extend(meta["error"].strip().splitlines())

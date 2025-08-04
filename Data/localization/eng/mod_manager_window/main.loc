@@ -1,0 +1,7 @@
+input_search = Search...
+mod_manager_window_name = Mod Manager
+mult_mods_sel = {number} {form-mod} selected:
+    .form1-mod = mod(s)
+    .form2-mod = mods
+    .form5-mod = mods
+no_mods = No mods selected

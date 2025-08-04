@@ -1,0 +1,3 @@
+contributors_thx_contributed = Спасибо {user} за вклад в разработку проекта!
+contributors_thx_discord = Спасибо сообществу Discord '{server_name}' за помощь, отзывы об ошибках и предложения по улучшению!
+contributors_thx_translate = Спасибо {user} за локализацию для '{lang_code}'!

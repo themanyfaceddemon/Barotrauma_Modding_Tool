@@ -1,0 +1,7 @@
+input_search = Поиск...
+mod_manager_window_name = Менеджер модов
+mult_mods_sel = Выбрано {number} {form-mod}:
+    .form1-mod = мод
+    .form2-mod = мода
+    .form5-mod = модов
+no_mods = Не выбраны модификации

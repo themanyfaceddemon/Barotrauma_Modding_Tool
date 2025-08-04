@@ -1,0 +1,6 @@
+settings_etc_str = Other settings
+settings_game_auto_lua = Enable automatic LUA download?
+settings_game_skip_intro = Enable skip intro?
+settings_game_str = Game settings
+settings_lang_str = Language settings
+settings_performance_hash = Enable download cache?

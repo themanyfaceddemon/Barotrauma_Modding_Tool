@@ -1,9 +1,0 @@
-cur-version-latest = Latest version?
-error-game-dir-not-set = Game directory not set!
-error-unknown-os = Unknown operating system
-menu-bar-settings-lable = Settings
-menu-bar-start-game = Start game
-menu-language = Language
-menu-toggle-experimental = Toggle experimental mode
-setting-toggle-install-lua = Toggle auto install lua
-setting-toggle-skip-intro = Toggle auto skip intro

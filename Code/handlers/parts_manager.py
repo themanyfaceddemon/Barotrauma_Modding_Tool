@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Set
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 from Code.package import ModUnit
 from Code.xml_object import XMLBuilder, XMLComment, XMLElement
 

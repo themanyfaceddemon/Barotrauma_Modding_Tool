@@ -1,32 +1,21 @@
 {
-    "сaс-devs": [
-        {
-            "name": "Cain (discord - cainheretic)",
-            "role": "cac-dev-thx"
-        },
-        {
-            "name": "Zipliks",
-            "role": "cac-dev-thx"
-        }
-    ],
-    "сaс-translators": [
-        {
-            "name": "profole",
-            "code": "ger"
-        }
-    ],
-    "cac-special-thanks": [
-        {
-            "to": "Neurotrauma Fork",
-            "desc": "cac-discord-thx"
-        },
-        {
-            "to": "Luatrauma",
-            "desc": "cac-discord-thx"
-        },
-        {
-            "to": "Nebual",
-            "desc": "cac-nebual-special"
-        }
+    "contributors": {
+        "contributed": [
+            "Cain (discord - cainheretic)",
+            "Zipliks"
+        ],
+        "discord": [
+            "Neurotrauma Fork",
+            "Luatrauma"
+        ],
+        "translate": [
+            [
+                "profole",
+                "ger"
+            ]
+        ]
+    },
+    "special": [
+        "nebual"
     ]
 }

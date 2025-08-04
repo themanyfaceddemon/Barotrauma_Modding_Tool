@@ -5,12 +5,13 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Optional
 
-from Code.app_vars import AppConfig
+from Code.app_config import AppConfig
 from Code.loc import Localization as loc
 from Code.package.dataclasses import ModUnit
 from Code.xml_object import XMLBuilder, XMLComment, XMLElement
 
 from .condition_manager import process_condition
+from .mod_cache import ModCache
 from .parts_manager import PartsManager
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class ModManager:
 
     @staticmethod
     def init():
+        ModCache.initialize()
         ModManager.load_mods()
         ModManager.load_cslua_config()
         atexit.register(ModManager._on_exit)
@@ -95,7 +97,7 @@ class ModManager:
                 if mod is not None:
                     ModManager.active_mods.append(mod)
 
-        ModManager.active_mods.sort(key=lambda m: m.load_order)  # type: ignore
+        ModManager.active_mods.sort(key=lambda m: m.load_order)
         for index, mod in enumerate(ModManager.active_mods, start=1):
             mod.load_order = index
 
@@ -124,6 +126,7 @@ class ModManager:
                 if mod is None:
                     return None
 
+                mod.load_order = -1
                 return mod
 
             except Exception as err:
@@ -485,9 +488,14 @@ class ModManager:
                             continue
 
                         on_mod = ModManager.get_mod_by_id(dep_id)
-                        id_to_mod[on_mod.id] = on_mod  # type: ignore
-                        id_to_name[on_mod.id] = on_mod.name  # type: ignore
-                        active_mod_ids.add(on_mod.id)  # type: ignore
+                        if on_mod is not None:
+                            id_to_mod[on_mod.id] = on_mod
+                            id_to_name[on_mod.id] = on_mod.name
+                            active_mod_ids.add(on_mod.id)
+                        else:
+                            logger.warning(
+                                f"Mod with ID '{dep_id}' not found while activating dependency."
+                            )
 
                 if dep.type == "patch":
                     dependency_graph[mod.id].append(dep_id)
