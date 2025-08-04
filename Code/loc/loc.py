@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Callable, Dict, Optional
+from typing import Callable
 
 from Code.app_config import AppConfig
 
@@ -16,7 +16,7 @@ main-app-name={form-apple} {sex-apple} # комментарий
 
 
 class Localization:
-    _translations: Dict[str, str] = {}
+    _translations: dict[str, str] = {}
     _lang_update_function: list[Callable] = []
 
     @classmethod
@@ -59,7 +59,7 @@ class Localization:
             file_path (Path): Путь к файлу локализации (.loc).
         """
         with file_path.open("r", encoding="utf-8") as file:
-            current_key: Optional[str] = None
+            current_key: str | None = None
             for line in file:
                 line = line.strip()
 
@@ -103,13 +103,13 @@ class Localization:
             str: Ключ формы слова ('form1', 'form2', 'form5').
         """
         if count % 10 == 1 and count % 100 != 11:
-            return f"form1-{base_key}"
+            return f".form1-{base_key}"
 
         elif 2 <= count % 10 <= 4 and not 12 <= count % 100 <= 14:
-            return f"form2-{base_key}"
+            return f".form2-{base_key}"
 
         else:
-            return f"form5-{base_key}"
+            return f".form5-{base_key}"
 
     @classmethod
     def has_string(cls, key: str) -> bool:
@@ -141,7 +141,7 @@ class Localization:
 
         for sub_key, value in kwargs.items():
             if isinstance(value, dict):
-                count: Optional[int] = value.get("count", None)
+                count: int | None = value.get("count", None)
                 if count is not None:
                     form_key: str = Localization._select_form(count, sub_key)
                     form_value: str = cls._translations.get(
@@ -149,7 +149,7 @@ class Localization:
                     )
                     text = text.replace(f"{{form-{sub_key}}}", form_value)
 
-                gender: Optional[str] = value.get("gender", None)
+                gender: str | None = value.get("gender", None)
                 if gender is not None:
                     gender_key: str = f"{gender}-{sub_key}"
                     gender_value: str = cls._translations.get(
@@ -184,6 +184,7 @@ class Localization:
     def remove_callback(cls, func: Callable) -> None:
         try:
             cls._lang_update_function.remove(func)
+
         except ValueError:
             pass
 

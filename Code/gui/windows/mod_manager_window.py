@@ -11,11 +11,30 @@ from .base_window import BaseWindow
 
 class ModManagerWindow(BaseWindow):
     _window_name = "mod_manager_window"
-    _btn_selected = set()
+    _btn_selected: list[str | int] = []
 
     @classmethod
     def _update_for_lang(cls) -> None:
         pass
+
+    @classmethod
+    def _clear_btn_selected(cls) -> None:
+        for btn in cls._btn_selected:
+            if not dpg.does_item_exist(btn):
+                continue
+
+            payload = dpg.get_item_user_data(btn)
+            if not payload:
+                continue
+
+            if payload.metadata.errors:
+                dpg.bind_item_theme(btn, "btn_error")
+            elif payload.metadata.warnings:
+                dpg.bind_item_theme(btn, "btn_warning")
+            else:
+                dpg.bind_item_theme(btn, "")
+
+        cls._btn_selected.clear()
 
     @classmethod
     def _on_window_resize(cls, app_data: tuple[int, int, int, int]) -> None:
@@ -56,56 +75,6 @@ class ModManagerWindow(BaseWindow):
                     cls._buld_mod_unit(tag, mod)
 
     @classmethod
-    def _btn_drag(cls, sender, app_data, user_data) -> None:
-        children = dpg.get_item_children(sender, 1)
-        for child in children or []:
-            print(dpg.get_item_type(child))
-            if dpg.get_item_type(child) == dpg.mvDragPayload:
-                dpg.delete_item(child)
-
-        # Готовим новые данные
-        selected_mods = []
-        if cls._btn_selected:
-            for item_id in cls._btn_selected:
-                mod = dpg.get_item_user_data(item_id)
-                if mod:
-                    selected_mods.append(mod)
-        else:
-            selected_mods = [user_data]
-
-        with dpg.drag_payload(
-            parent=sender,
-            payload_type="MOD",
-            drag_data=selected_mods,
-        ):
-            for mod in selected_mods:
-                dpg.add_text(mod.name)
-
-        dpg.bind_item_theme(sender, "btn_selected")
-
-    @classmethod
-    def _btn_drop(cls, sender, app_data, user_data) -> None:
-        if isinstance(app_data, (list, set, tuple)):
-            mods = set(app_data)
-        else:
-            mods = {app_data}
-
-        for mod in mods:
-            if not hasattr(mod, "metadata"):
-                mod = dpg.get_item_user_data(mod)
-
-            assert mod is not None
-
-            if mod.metadata.errors:
-                dpg.bind_item_theme(mod.id, "btn_error")
-            elif mod.metadata.warnings:
-                dpg.bind_item_theme(mod.id, "btn_warning")
-            else:
-                dpg.bind_item_theme(mod.id, "")
-
-        cls._btn_selected.clear()
-
-    @classmethod
     def _btn_on_click(cls, sender, app_data, user_data) -> None:
         if user_data is None:
             return
@@ -129,8 +98,51 @@ class ModManagerWindow(BaseWindow):
                     dpg.bind_item_theme(sender, "")
 
             else:
-                cls._btn_selected.add(sender)
+                cls._btn_selected.append(sender)
                 dpg.bind_item_theme(sender, "btn_selected")
+
+            return
+
+        print(Localization._translations)
+
+    @classmethod
+    def _btn_drag_callback(cls, sender, app_data, user_data) -> None:
+        tag = f"pl_{sender}"
+        if not dpg.does_item_exist(tag):
+            return
+
+        dpg.delete_item(tag, children_only=True)
+
+        if cls._btn_selected:
+            mods = [dpg.get_item_user_data(t) for t in cls._btn_selected]
+            mods = [m for m in mods if isinstance(m, ModUnit)]
+        else:
+            mod = dpg.get_item_user_data(sender)
+            mods = [mod] if isinstance(mod, ModUnit) else []
+
+        if not mods:
+            dpg.add_text(Localization.get_string("no_mods"), parent=tag)
+            return
+
+        if len(mods) == 1:
+            dpg.add_text(mods[0].name, parent=tag)
+        else:
+            dpg.add_text(
+                Localization.get_string(
+                    "mult_mods_sel",
+                    number=len(mods),
+                    mod={"count": len(mods)},
+                ),
+                parent=tag,
+            )
+            counter = 0
+            for mod in mods:
+                if counter >= 5:
+                    dpg.add_text("...", parent=tag, bullet=True)
+                    return
+
+                dpg.add_text(f"{mod.name}", parent=tag, bullet=True)
+                counter += 1
 
     @classmethod
     def _buld_mod_unit(
@@ -144,8 +156,15 @@ class ModManagerWindow(BaseWindow):
             parent=f"mod_fild_{parent}",
             user_data=mod,
             payload_type="MOD",
-            drag_callback=cls._btn_drag,
             callback=cls._btn_on_click,
+            drag_callback=cls._btn_drag_callback,
+        )
+
+        dpg.add_drag_payload(
+            tag=f"pl_{mod.id}",
+            parent=mod.id,
+            drag_data=mod,
+            payload_type="MOD",
         )
 
         if mod.metadata.errors:
@@ -154,19 +173,14 @@ class ModManagerWindow(BaseWindow):
         elif mod.metadata.warnings:
             dpg.bind_item_theme(mod.id, "btn_warning")
 
-        with dpg.drag_payload(
-            parent=mod.id,
-            payload_type="MOD",
-            drag_data=[mod],
-        ):
-            dpg.add_text(mod.name)
-
     @classmethod
     def _on_search(cls, sender, app_data, user_data) -> None:
         parent_tag = f"mod_fild_{user_data}"
         children = dpg.get_item_children(parent_tag, 1)
         if not children:
             return
+
+        cls._clear_btn_selected()
 
         query = app_data.lower()
         for child in children:
@@ -200,7 +214,7 @@ class ModManagerWindow(BaseWindow):
                     with dpg.group():
                         dpg.add_input_text(
                             tag=f"input_{tag}",
-                            hint="Поикс...",
+                            hint=Localization.get_string("input_search"),
                             user_data=tag,
                             callback=cls._on_search,
                         )
@@ -208,9 +222,7 @@ class ModManagerWindow(BaseWindow):
                             tag=f"mod_fild_{tag}",
                             no_scrollbar=True,
                             payload_type="MOD",
-                            drop_callback=cls._btn_drop,
                         )
 
         cls._rebuild_mod_units()
-
         super().create()

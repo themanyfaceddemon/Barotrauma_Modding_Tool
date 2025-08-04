@@ -97,7 +97,7 @@ class ModManager:
                 if mod is not None:
                     ModManager.active_mods.append(mod)
 
-        ModManager.active_mods.sort(key=lambda m: m.load_order)  # type: ignore
+        ModManager.active_mods.sort(key=lambda m: m.load_order)
         for index, mod in enumerate(ModManager.active_mods, start=1):
             mod.load_order = index
 
@@ -126,6 +126,7 @@ class ModManager:
                 if mod is None:
                     return None
 
+                mod.load_order = -1
                 return mod
 
             except Exception as err:
@@ -487,9 +488,14 @@ class ModManager:
                             continue
 
                         on_mod = ModManager.get_mod_by_id(dep_id)
-                        id_to_mod[on_mod.id] = on_mod  # type: ignore
-                        id_to_name[on_mod.id] = on_mod.name  # type: ignore
-                        active_mod_ids.add(on_mod.id)  # type: ignore
+                        if on_mod is not None:
+                            id_to_mod[on_mod.id] = on_mod
+                            id_to_name[on_mod.id] = on_mod.name
+                            active_mod_ids.add(on_mod.id)
+                        else:
+                            logger.warning(
+                                f"Mod with ID '{dep_id}' not found while activating dependency."
+                            )
 
                 if dep.type == "patch":
                     dependency_graph[mod.id].append(dep_id)

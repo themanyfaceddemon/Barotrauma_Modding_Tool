@@ -2,7 +2,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Set
+from typing import Any, Literal
 
 from Code.app_config import AppConfig
 from Code.handlers.mod_cache import ModCache
@@ -21,7 +21,7 @@ class SkipLoadBuild(Exception):
 @dataclass
 class Identifier:
     name: str
-    steam_id: Optional[str]
+    steam_id: str | None
 
     @property
     def id(self) -> str:
@@ -48,8 +48,8 @@ class Identifier:
 @dataclass
 class Dependencie(Identifier):
     type: Literal["patch", "requirement", "requiredAnyOrder", "conflict"]
-    attributes: Dict[str, str]
-    condition: Optional[str] = None
+    attributes: dict[str, str]
+    condition: str | None = None
 
     def __str__(self) -> str:
         additional_attributes = ", ".join(
@@ -85,10 +85,10 @@ class Metadata:
     author_name: str
     license: str
 
-    warnings: List[str]
-    errors: List[str]
+    warnings: list[str]
+    errors: list[str]
 
-    dependencies: List[Dependencie]
+    dependencies: list[Dependencie]
 
     @staticmethod
     def create_empty() -> "Metadata":
@@ -130,7 +130,7 @@ class ModUnit(Identifier):
 
     has_toggle_content: bool
 
-    load_order: Optional[int]
+    load_order: int
     path: Path
 
     metadata: Metadata
@@ -138,10 +138,10 @@ class ModUnit(Identifier):
     use_lua: bool
     use_cs: bool
 
-    settings: Dict[str, Any]
+    settings: dict[str, Any]
 
-    add_id: Set[str]
-    override_id: Set[str]
+    add_id: set[str]
+    override_id: set[str]
 
     def __hash__(self) -> int:
         return hash(self.id)
@@ -166,7 +166,7 @@ class ModUnit(Identifier):
             False,
             False,
             False,
-            None,
+            -1,
             Path(),
             Metadata.create_empty(),
             False,
@@ -183,7 +183,7 @@ class ModUnit(Identifier):
         else:
             return f"LocalMods/{self.path.parts[-1]}"
 
-    def get_bool_settigs(self, key: str) -> Optional[bool]:
+    def get_bool_settigs(self, key: str) -> bool | None:
         if key not in self.settings:
             return None
 
@@ -201,7 +201,7 @@ class ModUnit(Identifier):
         return False
 
     @staticmethod
-    def build(path: (Path | str)) -> Optional["ModUnit"]:
+    def build(path: (Path | str)) -> "ModUnit | None":
         try:
             path = Path(path)
 

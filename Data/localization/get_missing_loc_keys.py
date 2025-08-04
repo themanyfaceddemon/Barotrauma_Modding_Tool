@@ -1,5 +1,12 @@
+import logging
 import sys
 from pathlib import Path
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 def read_loc_file(file_path):
@@ -17,7 +24,7 @@ def read_loc_file(file_path):
     return loc_dict
 
 
-def collect_keys_from_language(language_folder):
+def collect_keys_from_language(language_folder: Path):
     all_keys = set()
 
     for loc_file in language_folder.rglob("*.loc"):
@@ -27,10 +34,11 @@ def collect_keys_from_language(language_folder):
     return all_keys
 
 
-def compare_keys_between_languages(input_directory):
+def compare_keys_between_languages(input_directory: str):
     language_keys = {}
+    input_path = Path(input_directory)
 
-    for language_folder in Path(input_directory).iterdir():
+    for language_folder in input_path.iterdir():
         if language_folder.is_dir():
             all_keys = collect_keys_from_language(language_folder)
             language_keys[language_folder.name] = all_keys
@@ -41,9 +49,9 @@ def compare_keys_between_languages(input_directory):
 
     comparison_result = {}
     for key in all_keys:
-        comparison_result[key] = {}
-        for language, keys in language_keys.items():
-            comparison_result[key][language] = key in keys
+        comparison_result[key] = {
+            language: key in keys for language, keys in language_keys.items()
+        }
 
     return comparison_result
 
@@ -60,15 +68,22 @@ def generate_report(comparison_result):
     return report
 
 
-input_directory = "Data/localization"
-comparison_result = compare_keys_between_languages(input_directory)
-report = generate_report(comparison_result)
+def main():
+    input_directory = "Data/localization"
+    logger.info(f"Checking keys in: {input_directory}")
 
-if report:
-    print("Missing keys found:")
-    for line in report:
-        print(line)
+    comparison_result = compare_keys_between_languages(input_directory)
+    report = generate_report(comparison_result)
 
-    sys.exit(1)
+    if report:
+        logger.warning("Missing keys found:")
+        for line in report:
+            logger.warning(line)
+        sys.exit(1)
 
-print("All keys are present across all languages.")
+    logger.info("All keys are present across all languages.")
+    sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
