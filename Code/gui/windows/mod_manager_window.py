@@ -15,7 +15,17 @@ class ModManagerWindow(BaseWindow):
 
     @classmethod
     def _update_for_lang(cls) -> None:
-        pass
+        dpg.set_item_label(
+            cls._window_name,
+            Localization.get_string("mod_manager_window_name"),
+        )
+
+        for tag in ["active", "inactive"]:
+            if dpg.does_item_exist(f"input_{tag}"):
+                dpg.configure_item(
+                    f"input_{tag}",
+                    hint=Localization.get_string("input_search"),
+                )
 
     @classmethod
     def _clear_btn_selected(cls) -> None:
